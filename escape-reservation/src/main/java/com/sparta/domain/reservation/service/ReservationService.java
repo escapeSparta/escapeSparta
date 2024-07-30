@@ -10,6 +10,7 @@ import com.sparta.domain.reservation.repository.ReservationRepository;
 import com.sparta.domain.theme.entity.ThemeTime;
 import com.sparta.domain.theme.repository.ThemeTimeRepository;
 import com.sparta.domain.user.entity.User;
+import com.sparta.global.lock.DistributedLock;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,7 @@ public class ReservationService {
      * @return 예약
      */
     @Transactional
+    @DistributedLock(key = "#requestDto.getThemeTimeId")
     public ReservationCreateResponseDto createReservation(ReservationCreateRequestDto requestDto, User user) {
         ThemeTime themeTime = themeTimeRepository.checkStoreAndThemeActive(requestDto.getThemeTimeId());
         reservationRepository.checkReservation(themeTime);
