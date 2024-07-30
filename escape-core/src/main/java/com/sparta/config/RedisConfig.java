@@ -1,6 +1,9 @@
 package com.sparta.config;
 
 
+import org.redisson.Redisson;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.Config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,23 +17,25 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class RedisConfig {
 
-    @Value("${REDIS_MAIL_HOST}")
+    @Value("${spring.data.redis.host}")
     private String redisHost;
 
-    @Value("${REDIS_MAIL_PORT}")
+    @Value("${spring.data.redis.port}")
     private int redisPort;
+
+    private static final String REDISSON_HOST_PREFIX = "redis://";
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
         return new LettuceConnectionFactory(redisHost, redisPort);
     }
 
-//    @Bean
-//    public RedisTemplate<?, ?> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
-//        RedisTemplate<byte[], byte[]> redisTemplate = new RedisTemplate<>();
-//        redisTemplate.setConnectionFactory(redisConnectionFactory);
-//        return redisTemplate;
-//    }
+    @Bean
+    public RedissonClient redissonClient() {
+        Config config = new Config();
+        config.useSingleServer().setAddress(REDISSON_HOST_PREFIX + redisHost + ":" + redisPort);
+        return Redisson.create(config);
+    }
 
     @Bean
     public RedisTemplate<String, Object> redisTemplate() {
@@ -40,6 +45,13 @@ public class RedisConfig {
         template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
         return template;
     }
+
+    //    @Bean
+//    public RedisTemplate<?, ?> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
+//        RedisTemplate<byte[], byte[]> redisTemplate = new RedisTemplate<>();
+//        redisTemplate.setConnectionFactory(redisConnectionFactory);
+//        return redisTemplate;
+//    }
 
 //    @Bean
 //    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
