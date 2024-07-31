@@ -1,4 +1,4 @@
-package com.sparta.controller;
+package com.sparta.domain.reservation.controller;
 
 
 import com.sparta.domain.reservation.dto.ReservationCreateRequestDto;

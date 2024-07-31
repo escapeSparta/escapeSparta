@@ -35,10 +35,10 @@ public class ReservationService {
      * @return 예약
      */
     @Transactional
-    @DistributedLock(key = "#requestDto.getThemeTimeId")
+    @DistributedLock(key = "themeTimeId:#requestDto.getThemeTimeId")
     public ReservationCreateResponseDto createReservation(ReservationCreateRequestDto requestDto, User user) {
         ThemeTime themeTime = themeTimeRepository.checkStoreAndThemeActive(requestDto.getThemeTimeId());
-        reservationRepository.checkReservation(themeTime);
+        reservationRepository.checkReservationDuplicated(themeTime);
 
         Reservation reservation = Reservation.builder()
                 .player(requestDto.getPlayer())

@@ -1,5 +1,6 @@
 package com.sparta.domain.theme.service;
 
+import com.sparta.domain.reservation.repository.ReservationRepository;
 import com.sparta.domain.theme.dto.request.ThemeTimeCreateRequestDto;
 import com.sparta.domain.theme.dto.request.ThemeTimeModifyRequestDto;
 import com.sparta.domain.theme.dto.response.ThemeTimeDetailResponseDto;
@@ -8,6 +9,7 @@ import com.sparta.domain.theme.entity.ThemeTime;
 import com.sparta.domain.theme.repository.ThemeRepository;
 import com.sparta.domain.theme.repository.ThemeTimeRepository;
 import com.sparta.domain.user.entity.User;
+import com.sparta.global.lock.DistributedLock;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -56,6 +58,7 @@ public class ThemeTimeAdminService {
     }
 
     @Transactional
+    @DistributedLock(key = "themeTimeId:#themeTimeId")
     public ThemeTimeDetailResponseDto modifyThemeTime(Long themeTimeId, ThemeTimeModifyRequestDto requestDto) {
         ThemeTime themeTime = themeTimeRepository.findThemeTimeOfActiveStore(themeTimeId);
 
@@ -69,6 +72,7 @@ public class ThemeTimeAdminService {
     }
 
     @Transactional
+    @DistributedLock(key = "themeTimeId:#themeTimeId")
     public void deleteThemeTime(Long themeTimeId) {
         ThemeTime themeTime = themeTimeRepository.findThemeTimeOfActiveStore(themeTimeId);
         themeTimeRepository.delete(themeTime);

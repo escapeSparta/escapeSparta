@@ -1,5 +1,6 @@
 package com.sparta.domain.theme.service;
 
+import com.sparta.domain.reservation.repository.ReservationRepository;
 import com.sparta.domain.theme.dto.request.ThemeTimeCreateRequestDto;
 import com.sparta.domain.theme.dto.request.ThemeTimeModifyRequestDto;
 import com.sparta.domain.theme.dto.response.ThemeTimeDetailResponseDto;
@@ -8,6 +9,9 @@ import com.sparta.domain.theme.entity.ThemeTime;
 import com.sparta.domain.theme.repository.ThemeRepository;
 import com.sparta.domain.theme.repository.ThemeTimeRepository;
 import com.sparta.domain.user.entity.User;
+import com.sparta.global.exception.customException.ThemeTimeException;
+import com.sparta.global.exception.errorCode.ThemeTimeErrorCode;
+import com.sparta.global.lock.DistributedLock;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,6 +27,7 @@ import static com.sparta.global.util.LocalDateTimeUtil.*;
 public class ThemeTimeService {
     private final ThemeTimeRepository themeTimeRepository;
     private final ThemeRepository themeRepository;
+    private final ReservationRepository reservationRepository;
 
     @Transactional
     public ThemeTimeDetailResponseDto createThemeTime(Long themeId, ThemeTimeCreateRequestDto requestDto, User user) {
@@ -59,9 +64,12 @@ public class ThemeTimeService {
     }
 
     @Transactional
+    @DistributedLock(key = "themeTimeId:#themeTimeId")
     public ThemeTimeDetailResponseDto modifyThemeTime(Long themeTimeId, ThemeTimeModifyRequestDto requestDto, User user) {
         ThemeTime themeTime = themeTimeRepository.findThemeTimeOfActiveStore(themeTimeId);
         themeTime.getTheme().getStore().checkManager(user);
+
+        checkForExistingReservation(themeTime);
 
         LocalDateTime startTime = parseDateTimeStringToLocalDateTime(requestDto.getStartTime());
         LocalDateTime endTime = calculateEndTime(startTime, themeTime.getTheme().getDuration());
@@ -73,11 +81,20 @@ public class ThemeTimeService {
     }
 
     @Transactional
+    @DistributedLock(key = "themeTimeId:#themeTimeId")
     public void deleteThemeTime(Long themeTimeId, User user) {
         ThemeTime themeTime = themeTimeRepository.findThemeTimeOfActiveStore(themeTimeId);
         themeTime.getTheme().getStore().checkManager(user);
 
+        checkForExistingReservation(themeTime);
+
         themeTimeRepository.delete(themeTime);
+    }
+
+    private void checkForExistingReservation(ThemeTime themeTime) {
+        if(reservationRepository.findByThemeTime(themeTime) != null) {
+            throw new ThemeTimeException(ThemeTimeErrorCode.THEME_TIME_HAS_RESERVATION);
+        }
     }
 
 }
