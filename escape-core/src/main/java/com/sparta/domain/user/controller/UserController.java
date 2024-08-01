@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
+//@CrossOrigin(origins = "http://localhost:5173") // Vue 앱의 주소를 허용
 public class UserController {
 
     private final UserService userService;

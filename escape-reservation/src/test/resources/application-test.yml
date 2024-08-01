@@ -1,0 +1,60 @@
+spring:
+  application:
+    name: trello
+
+---
+spring:
+  datasource:
+    url: jdbc:h2:mem:test;MODE=MYSQL
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+        use_sql_comments: true
+  redis:
+    port: ${REDIS_MAIL_PORT}
+    host: ${REDIS_MAIL_HOST}
+  invite:
+    email: ${ROLE_EMAIL}
+  mail:
+    host: ${MAIL_HOST} #smtp 서버 주소
+    port: ${MAIL_PORT} # 메일 인증서버 포트
+    username: ${MAIL_USERNAME} #구글 아이디
+    password: ${MAIL_PASSWORD} #구글 비밀번호
+    properties:
+      mail:
+        smtp:
+          starttls:
+            enable: true
+            required: true
+          auth: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+          ssl:
+            trust: smtp.gmail.com
+            enable: true #반드시 필요 -> SSL 필요로 되어있으면
+  data:
+    redis:
+      port: ${REDIS_MAIL_PORT}
+      host: ${REDIS_MAIL_HOST}
+jwt:
+  secret:
+    key: ${JWT_SECRET_KEY}
+server:
+  port: ${RESERVATION_SERVER_PORT}
+admin:
+  key: ${ADMIN_KEY}
+
+kakao-payment:
+  admin-key: ${PAY_ADMIN_KEY}
+  cid: TC0ONETIME
+  approve-url:  http://localhost:${RESERVATION_SERVER_PORT}/payments/kakaoPaySuccess
+  cancel-url: http://localhost:${RESERVATION_SERVER_PORT}/payments/kakaoPayCancel
+  fail-url: http://localhost:${RESERVATION_SERVER_PORT}/payments/kakaoPayFail

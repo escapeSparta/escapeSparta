@@ -7,4 +7,6 @@ jar{enabled = true}
 
 dependencies {
     implementation project(':escape-core')
+
+    testRuntimeOnly 'com.h2database:h2'
 }
