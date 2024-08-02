@@ -34,7 +34,6 @@ public class ReservationRequestService {
     private final ReservationRepository reservationRepository;
     private final ThemeTimeRepository themeTimeRepository;
     private final UserRepository userRepository;
-    private final PaymentService paymentService;
     private final KafkaEmailProducer kafkaEmailProducer;
 
     @Transactional
@@ -43,7 +42,6 @@ public class ReservationRequestService {
         User user = userRepository.findByIdOrElseThrow(requestDto.getUserId());
         ThemeTime themeTime = themeTimeRepository.checkStoreAndThemeActive(requestDto.getRequestDto().getThemeTimeId());
         reservationRepository.checkReservation(themeTime);
-
         if(themeTime.getThemeTimeStatus() == ThemeTimeStatus.DISABLE) {
             throw new ReservationException(ReservationErrorCode.RESERVATION_DUPLICATION);
         }

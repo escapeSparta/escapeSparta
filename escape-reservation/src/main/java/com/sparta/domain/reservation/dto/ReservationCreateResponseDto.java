@@ -11,16 +11,28 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ReservationCreateResponseDto {
     private Long reservationId;
+    private String storeName; //가게이름
+    private String storeAddress; //가게지역
+    private String themeTitle; //테마이름
+    private String level;   //난이도
+    private LocalDateTime startTime;   //시작시간
     private Integer player;
-    private Long price;
-    private PaymentStatus paymentStatus;
+    private Integer duration;
+    private String image;
+    private Long totalPrice;
     private LocalDateTime createAt;
 
     public ReservationCreateResponseDto(Reservation reservation){
         reservationId = reservation.getId();
+        storeName = reservation.getTheme().getStore().getName();
+        storeAddress = reservation.getTheme().getStore().getAddress();
+        themeTitle = reservation.getTheme().getTitle();
+        level = reservation.getTheme().getTitle();
+        startTime = reservation.getThemeTime().getStartTime();
         player = reservation.getPlayer();
-        price = reservation.getPrice();
-        paymentStatus = reservation.getPaymentStatus();
+        duration = reservation.getTheme().getDuration();
+        image = reservation.getTheme().getThemeImage();
+        totalPrice = reservation.getPrice();
         createAt = reservation.getCreatedAt();
     }
 }
