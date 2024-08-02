@@ -1,0 +1,53 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                script {
+                    // 브랜치 조건 확인
+                    if (env.BRANCH_NAME == 'main' || env.BRANCH_NAME == 'develop') {
+                        echo "Running pipeline for branch: ${env.BRANCH_NAME}"
+                    } else {
+                        error "This pipeline only runs on 'main' or 'develop' branches."
+                    }
+                }
+                // 코드 체크아웃
+                checkout scm
+            }
+        }
+        stage('Build') {
+            steps {
+                // 빌드 명령어
+                sh './gradlew build'
+            }
+        }
+        stage('Test') {
+            steps {
+                // 테스트 명령어
+                sh './gradlew test'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                // 배포 명령어
+                sh './gradlew deploy'
+            }
+        }
+    }
+
+    post {
+        always {
+            // 빌드 결과를 알림
+            echo 'Pipeline finished.'
+        }
+        success {
+            // 성공 시 알림
+            echo 'Pipeline succeeded.'
+        }
+        failure {
+            // 실패 시 알림
+            echo 'Pipeline failed.'
+        }
+    }
+}
