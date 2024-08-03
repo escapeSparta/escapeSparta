@@ -6,6 +6,7 @@ import com.sparta.domain.store.dto.KafkaStoreResponseDto;
 import com.sparta.domain.store.dto.StoreResponseDto;
 import com.sparta.domain.store.entity.Store;
 import com.sparta.domain.store.repository.StoreRepository;
+import com.sparta.global.exception.customException.GlobalCustomException;
 import com.sparta.global.kafka.KafkaTopic;
 import com.sparta.global.util.PageUtil;
 import lombok.RequiredArgsConstructor;
@@ -27,17 +28,21 @@ public class StoreRequestConsumerService {
 
     @KafkaListener(topics = KafkaTopic.STORE_REQUEST_TOPIC, groupId = "${GROUP_ID}")
     public void handleStoreRequest(KafkaStoreRequestDto request) {
-        Pageable pageable = PageUtil.createPageable(request.getPageNum(), request.getPageSize(), request.isDesc(), request.getSort());
-        Page<Store> stores = storeRepository.findByName(request.getKeyWord(), request.getStoreRegion(), pageable);
-        Page<StoreResponseDto> storeResponseDtoPage =  stores.map(StoreResponseDto::new);
-        KafkaStoreResponseDto response = new KafkaStoreResponseDto(request.getRequestId(), storeResponseDtoPage);
-
         try {
-            String message = objectMapper.writeValueAsString(response);
-            log.error("2222");
-            kafkaTemplate.send(KafkaTopic.STORE_RESPONSE_TOPIC, message);
-        } catch (Exception e) {
-            log.error("직열화 에러: {}", e.getMessage());
+            Pageable pageable = PageUtil.createPageable(request.getPageNum(), request.getPageSize(), request.isDesc(), request.getSort());
+            Page<Store> stores = storeRepository.findByName(request.getKeyWord(), request.getStoreRegion(), pageable);
+            Page<StoreResponseDto> storeResponseDtoPage = stores.map(StoreResponseDto::new);
+            KafkaStoreResponseDto response = new KafkaStoreResponseDto(request.getRequestId(), storeResponseDtoPage);
+
+            try {
+                String message = objectMapper.writeValueAsString(response);
+                log.error("2222");
+                kafkaTemplate.send(KafkaTopic.STORE_RESPONSE_TOPIC, message);
+            } catch (Exception e) {
+                log.error("직열화 에러: {}", e.getMessage());
+            }
+        }catch (GlobalCustomException e){
+            log.error("GlobalCustomException 에러 발생: {}", e.getMessage());
         }
     }
 

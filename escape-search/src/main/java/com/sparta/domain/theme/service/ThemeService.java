@@ -2,6 +2,8 @@ package com.sparta.domain.theme.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.domain.theme.dto.*;
+import com.sparta.global.exception.customException.KafkaException;
+import com.sparta.global.exception.errorCode.KafkaErrorCode;
 import com.sparta.global.kafka.KafkaTopic;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,9 +16,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.*;
 
 @Service
 @RequiredArgsConstructor
@@ -46,9 +46,13 @@ public class ThemeService {
         sendReviewRequest(requestId, storeId, pageNum, pageSize, isDesc, sort);
 
         try {
-            return future.get(); // 응답을 기다림
+            return future.get(3, TimeUnit.SECONDS);
         } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException("방탈출 카페 response 실패", e);
+            throw new RuntimeException("리뷰 response 실패", e);
+        }catch (TimeoutException e) {
+            throw new KafkaException(KafkaErrorCode.KAFKA_ERROR);
+        } finally {
+            responseThemeFutures.remove(requestId); // 응답을 받지 못했거나 에러가 발생하면 future를 제거
         }
     }
 
@@ -70,9 +74,13 @@ public class ThemeService {
         sendThemeInfoRequest(requestId, storeId, themeId);
 
         try {
-            return future.get(); // 응답을 기다림
+            return future.get(3, TimeUnit.SECONDS);
         } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException("방탈출 카페 response 실패", e);
+            throw new RuntimeException("리뷰 response 실패", e);
+        }catch (TimeoutException e) {
+            throw new KafkaException(KafkaErrorCode.KAFKA_ERROR);
+        } finally {
+            responseThemeInfoFutures.remove(requestId); // 응답을 받지 못했거나 에러가 발생하면 future를 제거
         }
     }
 
@@ -94,12 +102,14 @@ public class ThemeService {
         sendThemeTimeRequest(requestId, storeId, themeId, day);
 
         try {
-            return future.get(); // 응답을 기다림
+            return future.get(3, TimeUnit.SECONDS);
         } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException("방탈출 카페 시간 response 실패", e);
+            throw new RuntimeException("리뷰 response 실패", e);
+        }catch (TimeoutException e) {
+            throw new KafkaException(KafkaErrorCode.KAFKA_ERROR);
+        } finally {
+            responseThemeTimeFutures.remove(requestId); // 응답을 받지 못했거나 에러가 발생하면 future를 제거
         }
-
-
     }
 
     private void sendThemeTimeRequest(String requestId, Long storeId, Long themeId, String day) {

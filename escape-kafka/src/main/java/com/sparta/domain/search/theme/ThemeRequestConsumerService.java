@@ -8,6 +8,7 @@ import com.sparta.domain.theme.entity.Theme;
 import com.sparta.domain.theme.entity.ThemeTime;
 import com.sparta.domain.theme.repository.ThemeRepository;
 import com.sparta.domain.theme.repository.ThemeTimeRepository;
+import com.sparta.global.exception.customException.GlobalCustomException;
 import com.sparta.global.kafka.KafkaTopic;
 import com.sparta.global.util.LocalDateTimeUtil;
 import com.sparta.global.util.PageUtil;
@@ -37,43 +38,55 @@ public class ThemeRequestConsumerService {
 
     @KafkaListener(topics = KafkaTopic.THEME_REQUEST_TOPIC, groupId = "${GROUP_ID}")
     public void handleThemeRequest(KafkaThemeRequestDto request) {
-        Store store = storeRepository.findByIdOrElseThrow(request.getStoreId());
-
-        Pageable pageable = PageUtil.createPageable(request.getPageNum(), request.getPageSize(), request.isDesc(), request.getSort());
-        Page<Theme> themes = themeRepository.findByStore(store, pageable);
-        Page<ThemeResponseDto> themeResponseDtoPage =  themes.map(ThemeResponseDto::new);
-
-        KafkaThemeResponseDto responseDto = new KafkaThemeResponseDto(request.getRequestId(), themeResponseDtoPage);
-
         try {
-            log.error("3333");
-            String message = objectMapper.writeValueAsString(responseDto);
-            kafkaTemplate.send(KafkaTopic.THEME_RESPONSE_TOPIC, message);
-        } catch (Exception e) {
-            log.error("직열화 에러: {}", e.getMessage());
+            Store store = storeRepository.findByIdOrElseThrow(request.getStoreId());
+
+            Pageable pageable = PageUtil.createPageable(request.getPageNum(), request.getPageSize(), request.isDesc(), request.getSort());
+            Page<Theme> themes = themeRepository.findByStore(store, pageable);
+            Page<ThemeResponseDto> themeResponseDtoPage = themes.map(ThemeResponseDto::new);
+
+            KafkaThemeResponseDto responseDto = new KafkaThemeResponseDto(request.getRequestId(), themeResponseDtoPage);
+
+            try {
+                log.error("3333");
+                String message = objectMapper.writeValueAsString(responseDto);
+                kafkaTemplate.send(KafkaTopic.THEME_RESPONSE_TOPIC, message);
+            } catch (Exception e) {
+                log.error("직열화 에러: {}", e.getMessage());
+            }
+        }catch (GlobalCustomException e){
+            log.error("GlobalCustomException 에러 발생: {}", e.getMessage());
         }
     }
 
     @KafkaListener(topics = KafkaTopic.THEME_INFO_REQUEST_TOPIC, groupId = "${GROUP_ID}")
     public void handleThemeInfoRequest(KafkaThemeInfoRequestDto request) {
-        storeRepository.findByActiveStore(request.getStoreId());
-        Theme theme = themeRepository.findByActiveTheme(request.getThemeId());
-        ThemeInfoResponseDto themeInfoResponseDto = new ThemeInfoResponseDto(theme);
-        KafkaThemeInfoResponseDto responseDto = new KafkaThemeInfoResponseDto(request.getRequestId(), themeInfoResponseDto);
-        log.error("4444");
-        kafkaThemeInfoTemplate.send(KafkaTopic.THEME_INFO_RESPONSE_TOPIC, responseDto);
+        try {
+            storeRepository.findByActiveStore(request.getStoreId());
+            Theme theme = themeRepository.findByActiveTheme(request.getThemeId());
+            ThemeInfoResponseDto themeInfoResponseDto = new ThemeInfoResponseDto(theme);
+            KafkaThemeInfoResponseDto responseDto = new KafkaThemeInfoResponseDto(request.getRequestId(), themeInfoResponseDto);
+            log.error("4444");
+            kafkaThemeInfoTemplate.send(KafkaTopic.THEME_INFO_RESPONSE_TOPIC, responseDto);
+        }catch (GlobalCustomException e){
+            log.error("GlobalCustomException 에러 발생: {}", e.getMessage());
+        }
     }
 
     @KafkaListener(topics = KafkaTopic.THEME_TIME_REQUEST_TOPIC, groupId = "${GROUP_ID}")
     public void handleThemeTimeRequest(KafkaThemeTimeRequestDto request) {
-        LocalDate day = LocalDateTimeUtil.parseDateStringToLocalDate(request.getDay());
-        storeRepository.findByActiveStore(request.getStoreId());
-        List<ThemeTime> themeTimeList = themeTimeRepository.findThemeTimesByDate(request.getThemeId(), day);
-        List<ThemeTimeResponseDto> themeTimeResponseDtoList = themeTimeList.stream().map(ThemeTimeResponseDto::new).toList();
+        try {
+            LocalDate day = LocalDateTimeUtil.parseDateStringToLocalDate(request.getDay());
+            storeRepository.findByActiveStore(request.getStoreId());
+            List<ThemeTime> themeTimeList = themeTimeRepository.findThemeTimesByDate(request.getThemeId(), day);
+            List<ThemeTimeResponseDto> themeTimeResponseDtoList = themeTimeList.stream().map(ThemeTimeResponseDto::new).toList();
 
-        KafkaThemeTimeResponseDto responseDto = new KafkaThemeTimeResponseDto(request.getRequestId(), themeTimeResponseDtoList);
-        log.error("5555");
-        kafkaThemeTimeTemplate.send(KafkaTopic.THEME_TIME_RESPONSE_TOPIC, responseDto);
+            KafkaThemeTimeResponseDto responseDto = new KafkaThemeTimeResponseDto(request.getRequestId(), themeTimeResponseDtoList);
+            log.error("5555");
+            kafkaThemeTimeTemplate.send(KafkaTopic.THEME_TIME_RESPONSE_TOPIC, responseDto);
+        }catch (GlobalCustomException e){
+            log.error("GlobalCustomException 에러 발생: {}", e.getMessage());
+        }
     }
 
 }
