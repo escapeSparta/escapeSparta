@@ -20,9 +20,9 @@ import java.util.concurrent.ExecutionException;
 @Slf4j
 public class ReservationService {
 
-    public static final ConcurrentHashMap<String, CompletableFuture<ReservationCreateResponseDto>> responseCreateFutures = new ConcurrentHashMap<>();
-    public static final ConcurrentHashMap<String, CompletableFuture<Void>> responseDeleteFutures = new ConcurrentHashMap<>();
-    public static final ConcurrentHashMap<String, CompletableFuture<List<ReservationResponseDto>>> responseGetFutures = new ConcurrentHashMap<>();
+    public final ConcurrentHashMap<String, CompletableFuture<ReservationCreateResponseDto>> responseCreateFutures;
+    public final ConcurrentHashMap<String, CompletableFuture<Void>> responseDeleteFutures;
+    public final ConcurrentHashMap<String, CompletableFuture<List<ReservationResponseDto>>> responseGetFutures;
 
     private final KafkaTemplate<String, KafkaReservationCreateRequestDto> kafkaReservationCreateTemplate;
     private final KafkaTemplate<String, KafkaReservationDeleteRequestDto> kafkaReservationDeleteTemplate;

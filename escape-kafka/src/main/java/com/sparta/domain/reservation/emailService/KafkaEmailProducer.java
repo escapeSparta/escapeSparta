@@ -13,7 +13,7 @@ public class KafkaEmailProducer {
 
     private final KafkaTemplate<String, String> kafkaEmailTemplate;
 
-    private final ObjectMapper objectMapper;
+//    private final ObjectMapper objectMapper;
 
     public void sendCreateReservationEmail(String topic, String email){
         try{

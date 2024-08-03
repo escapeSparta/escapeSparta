@@ -1,4 +1,4 @@
-package com.sparta.domain.review.service;
+package com.sparta.domain.search.review;
 
 import com.sparta.domain.review.dto.KafkaReviewRequestDto;
 import com.sparta.domain.review.dto.KafkaReviewResponseDto;
@@ -20,7 +20,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ReviewConsumerService {
+public class ReviewRequestConsumerService {
     private final ReviewRepository reviewRepository;
     private final ThemeRepository themeRepository;
     private final StoreRepository storeRepository;
@@ -35,6 +35,7 @@ public class ReviewConsumerService {
         List<ReviewResponseDto> responseDtoList = reviewList.stream().map(ReviewResponseDto::new).toList();
 
         KafkaReviewResponseDto reviewResponse = new KafkaReviewResponseDto(reviewRequest.getRequestId(), responseDtoList);
+        log.error("1111");
         kafkaTemplate.send(KafkaTopic.REVIEW_RESPONSE_TOPIC, reviewResponse);
     }
 }

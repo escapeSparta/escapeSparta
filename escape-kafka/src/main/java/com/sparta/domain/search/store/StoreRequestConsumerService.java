@@ -1,4 +1,4 @@
-package com.sparta.domain.store.service;
+package com.sparta.domain.search.store;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.domain.store.dto.KafkaStoreRequestDto;
@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class StoreConsumerService {
+public class StoreRequestConsumerService {
     private final StoreRepository storeRepository;
     private final ObjectMapper objectMapper;
 
@@ -34,6 +34,7 @@ public class StoreConsumerService {
 
         try {
             String message = objectMapper.writeValueAsString(response);
+            log.error("2222");
             kafkaTemplate.send(KafkaTopic.STORE_RESPONSE_TOPIC, message);
         } catch (Exception e) {
             log.error("직열화 에러: {}", e.getMessage());

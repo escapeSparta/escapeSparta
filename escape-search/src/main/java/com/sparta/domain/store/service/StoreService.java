@@ -26,8 +26,7 @@ import java.util.concurrent.ExecutionException;
 public class StoreService {
 
     private final KafkaTemplate<String, KafkaStoreRequestDto> kafkaTemplate;
-    private final ConcurrentHashMap<String, CompletableFuture<Page<StoreResponseDto>>> responseFutures = new ConcurrentHashMap<>();
-    private final ObjectMapper objectMapper;
+    private final ConcurrentHashMap<String, CompletableFuture<Page<StoreResponseDto>>> responseFutures;
 
     /**
      * 방탈출 카페 조회
@@ -58,23 +57,5 @@ public class StoreService {
     private void sendReviewRequest(String requestId, int pageNum, int pageSize, boolean isDesc, String keyWord, StoreRegion storeRegion, String sort) {
         KafkaStoreRequestDto reviewRequest = new KafkaStoreRequestDto(requestId, pageNum, pageSize, isDesc, keyWord, storeRegion, sort);
         kafkaTemplate.send(KafkaTopic.STORE_REQUEST_TOPIC, reviewRequest);
-    }
-
-    @KafkaListener(topics = KafkaTopic.STORE_RESPONSE_TOPIC, groupId = "${GROUP_ID}")
-    public void handleStoreResponse(String response) {
-        KafkaStoreResponseDto responseDto = parseMessage(response);
-        CompletableFuture<Page<StoreResponseDto>> future = responseFutures.remove(Objects.requireNonNull(responseDto).getRequestId());
-        if (future != null) {
-            future.complete(responseDto.getResponseDtos());
-        }
-    }
-
-    private KafkaStoreResponseDto parseMessage(String message) {
-        try {
-            return objectMapper.readValue(message, KafkaStoreResponseDto.class);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 }

@@ -1,8 +1,7 @@
 package com.sparta.domain.reservation.service;
 
-import com.sparta.domain.kafka.kafkaEmailService.KafkaEmailProducer;
-import com.sparta.domain.kakaopayment.service.PaymentService;
 import com.sparta.domain.reservation.dto.*;
+import com.sparta.domain.reservation.emailService.KafkaEmailProducer;
 import com.sparta.domain.reservation.entity.Reservation;
 import com.sparta.domain.reservation.entity.ReservationStatus;
 import com.sparta.domain.reservation.repository.ReservationRepository;
@@ -55,6 +54,8 @@ public class ReservationRequestService {
                 .theme(themeTime.getTheme())
                 .themeTime(themeTime)
                 .build();
+
+        themeTime.updateThemeTimeStatus();
 
         KafkaReservationCreateResponseDto responseDto =  new KafkaReservationCreateResponseDto(requestDto.getRequestId()
                 , new ReservationCreateResponseDto(reservationRepository.save(reservation)), user.getEmail());

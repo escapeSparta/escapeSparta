@@ -1,17 +1,17 @@
 ### 방탈출 카페 조회
-GET http://localhost:8083/search/stores
+GET http://localhost:8085/search/stores
 
 ### 방탈출 카페 테마 조회
-GET http://localhost:8083/search/stores/1/theme
+GET http://localhost:8085/search/stores/1/theme
 
 ### 방탈출 카페 테마 상세 조회
-GET http://localhost:8083/search/stores/theme/1/info?storeId=1
+GET http://localhost:8085/search/stores/theme/1/info?storeId=1
 
 ### 방탈출 카페 테마 시간 조회
-GET http://localhost:8085/search/stores/theme/1/time?storeId=1&day=2024-08-03
+GET http://localhost:8085/search/stores/theme/1/time?storeId=1&day=2024-08-11
 
 ### 방탈출 카페 테마 리뷰 조히
-GET http://localhost:8083/search/reviews?storeId=1&themeId=1
+GET http://localhost:8085/search/reviews?storeId=1&themeId=1
 
 
 

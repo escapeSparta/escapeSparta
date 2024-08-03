@@ -26,10 +26,9 @@ public class ThemeService {
     private final KafkaTemplate<String, KafkaThemeRequestDto> kafkaThemeTemplate;
     private final KafkaTemplate<String, KafkaThemeInfoRequestDto> kafkaThemeInfoTemplate;
     private final KafkaTemplate<String, KafkaThemeTimeRequestDto> kafkaThemeTimeTemplate;
-    private final ConcurrentHashMap<String, CompletableFuture<Page<ThemeResponseDto>>> responseThemeFutures = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, CompletableFuture<ThemeInfoResponseDto>> responseThemeInfoFutures = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, CompletableFuture<List<ThemeTimeResponseDto>>> responseThemeTimeFutures = new ConcurrentHashMap<>();
-    private final ObjectMapper objectMapper;
+    private final ConcurrentHashMap<String, CompletableFuture<Page<ThemeResponseDto>>> responseThemeFutures;
+    private final ConcurrentHashMap<String, CompletableFuture<ThemeInfoResponseDto>> responseThemeInfoFutures;
+    private final ConcurrentHashMap<String, CompletableFuture<List<ThemeTimeResponseDto>>> responseThemeTimeFutures;
 
     /**
      * 방탈출 카페 테마 전체 조회
@@ -58,24 +57,6 @@ public class ThemeService {
         kafkaThemeTemplate.send(KafkaTopic.THEME_REQUEST_TOPIC, reviewRequest);
     }
 
-    @KafkaListener(topics = KafkaTopic.THEME_RESPONSE_TOPIC, groupId = "${GROUP_ID}")
-    public void handleThemeResponse(String response) {
-        KafkaThemeResponseDto responseDto = parseThemeMessage(response);
-        CompletableFuture<Page<ThemeResponseDto>> future = responseThemeFutures.remove(Objects.requireNonNull(responseDto).getRequestId());
-        if (future != null) {
-            future.complete(responseDto.getResponseDtos());
-        }
-    }
-
-    private KafkaThemeResponseDto parseThemeMessage(String message) {
-        try {
-            return objectMapper.readValue(message, KafkaThemeResponseDto.class);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
     /**
      * 방탈출 카페 테마 상세 조회
      * @param storeId 해당 카페 id
@@ -98,14 +79,6 @@ public class ThemeService {
     private void sendThemeInfoRequest(String requestId, Long storeId, Long themeId) {
         KafkaThemeInfoRequestDto reviewRequest = new KafkaThemeInfoRequestDto(requestId, storeId, themeId);
         kafkaThemeInfoTemplate.send(KafkaTopic.THEME_INFO_REQUEST_TOPIC, reviewRequest);
-    }
-
-    @KafkaListener(topics = KafkaTopic.THEME_INFO_RESPONSE_TOPIC, groupId = "${GROUP_ID}")
-    public void handleThemeInfoResponse(KafkaThemeInfoResponseDto response) {
-        CompletableFuture<ThemeInfoResponseDto> future = responseThemeInfoFutures.remove(Objects.requireNonNull(response).getRequestId());
-        if (future != null) {
-            future.complete(response.getResponseDto());
-        }
     }
 
     /**
@@ -132,13 +105,5 @@ public class ThemeService {
     private void sendThemeTimeRequest(String requestId, Long storeId, Long themeId, String day) {
         KafkaThemeTimeRequestDto Request = new KafkaThemeTimeRequestDto(requestId, storeId, themeId, day);
         kafkaThemeTimeTemplate.send(KafkaTopic.THEME_TIME_REQUEST_TOPIC, Request);
-    }
-
-    @KafkaListener(topics = KafkaTopic.THEME_TIME_RESPONSE_TOPIC, groupId = "${GROUP_ID}")
-    public void handleThemeTimeResponse(KafkaThemeTimeResponseDto response) {
-        CompletableFuture<List<ThemeTimeResponseDto>> future = responseThemeTimeFutures.remove(Objects.requireNonNull(response).getRequestId());
-        if (future != null) {
-            future.complete(response.getResponseDtoList());
-        }
     }
 }

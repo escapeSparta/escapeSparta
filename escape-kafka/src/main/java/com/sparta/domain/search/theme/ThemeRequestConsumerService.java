@@ -1,4 +1,4 @@
-package com.sparta.domain.theme.service;
+package com.sparta.domain.search.theme;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.domain.store.entity.Store;
@@ -25,7 +25,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ThemeConsumerService {
+public class ThemeRequestConsumerService {
 
     private final ThemeRepository themeRepository;
     private final StoreRepository storeRepository;
@@ -46,6 +46,7 @@ public class ThemeConsumerService {
         KafkaThemeResponseDto responseDto = new KafkaThemeResponseDto(request.getRequestId(), themeResponseDtoPage);
 
         try {
+            log.error("3333");
             String message = objectMapper.writeValueAsString(responseDto);
             kafkaTemplate.send(KafkaTopic.THEME_RESPONSE_TOPIC, message);
         } catch (Exception e) {
@@ -59,6 +60,7 @@ public class ThemeConsumerService {
         Theme theme = themeRepository.findByActiveTheme(request.getThemeId());
         ThemeInfoResponseDto themeInfoResponseDto = new ThemeInfoResponseDto(theme);
         KafkaThemeInfoResponseDto responseDto = new KafkaThemeInfoResponseDto(request.getRequestId(), themeInfoResponseDto);
+        log.error("4444");
         kafkaThemeInfoTemplate.send(KafkaTopic.THEME_INFO_RESPONSE_TOPIC, responseDto);
     }
 
@@ -70,6 +72,7 @@ public class ThemeConsumerService {
         List<ThemeTimeResponseDto> themeTimeResponseDtoList = themeTimeList.stream().map(ThemeTimeResponseDto::new).toList();
 
         KafkaThemeTimeResponseDto responseDto = new KafkaThemeTimeResponseDto(request.getRequestId(), themeTimeResponseDtoList);
+        log.error("5555");
         kafkaThemeTimeTemplate.send(KafkaTopic.THEME_TIME_RESPONSE_TOPIC, responseDto);
     }
 

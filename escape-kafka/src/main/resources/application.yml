@@ -9,8 +9,8 @@ spring:
       ddl-auto: update
     properties:
       hibernate:
-        show_sql: true
-        format_sql: true
+#        show_sql: true
+#        format_sql: true
         use_sql_comments: true
   redis:
     port: ${REDIS_MAIL_PORT}
@@ -43,6 +43,8 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    listener:
+      concurrency: 3
   aws:
     ses:
       accessKey: ${ACCESS_KEY}
