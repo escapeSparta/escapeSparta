@@ -15,6 +15,7 @@ public class ReservationResponseDto {
     private String themeImage;
     private String themeTitle;
     private LocalDateTime createAt;
+    private LocalDateTime startTime;
     private String storeName;
     private Integer player;
     private Long price;
@@ -26,6 +27,7 @@ public class ReservationResponseDto {
         this.themeImage = reservation.getTheme().getThemeImage();
         this.themeTitle = reservation.getTheme().getTitle();
         this.createAt = reservation.getCreatedAt();
+        this.startTime = reservation.getThemeTime().getStartTime();
         this.storeName = reservation.getTheme().getStore().getName();
         this.player = reservation.getPlayer();
         this.price = reservation.getPrice();

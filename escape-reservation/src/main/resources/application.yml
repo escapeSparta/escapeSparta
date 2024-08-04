@@ -67,6 +67,9 @@ server:
 kakao-payment:
   admin-key: ${PAY_ADMIN_KEY}
   cid: TC0ONETIME
-  approve-url:  http://localhost:${RESERVATION_SERVER_PORT}/payments/kakaoPaySuccess
-  cancel-url: http://localhost:${RESERVATION_SERVER_PORT}/payments/kakaoPayCancel
-  fail-url: http://localhost:${RESERVATION_SERVER_PORT}/payments/kakaoPayFail
+#  approve-url:  http://localhost:${RESERVATION_SERVER_PORT}/payments/kakaoPaySuccess
+#  cancel-url: http://localhost:${RESERVATION_SERVER_PORT}/payments/kakaoPayCancel
+#  fail-url: http://localhost:${RESERVATION_SERVER_PORT}/payments/kakaoPayFail
+  approve-url : http://localhost:5173/pay-success
+  cancel-url :  http://localhost:5173/pay-cancel
+  fail-url: http://localhost:5173/pay-fail

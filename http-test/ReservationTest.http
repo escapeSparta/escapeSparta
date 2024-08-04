@@ -1,10 +1,10 @@
 ### 예약 생성
-POST http://localhost:8086/reservations
+POST http://localhost:8084/reservations
 Authorization: {{user1Auth}}
 Content-Type: application/json
 
 {
-  "themeTimeId": 2,
+  "themeTimeId":31,
   "player": 4,
   "price": 30000,
   "paymentStatus": "COMPLETE"

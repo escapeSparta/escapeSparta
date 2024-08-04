@@ -39,6 +39,7 @@ public class ResponseUtil {
         String jsonResponse = objectMapper.writeValueAsString(responseMessage);
         response.setCharacterEncoding("UTF-8");
         response.setContentType("application/json; charset=UTF-8");
+        response.setStatus(errorCode.getHttpStatusCode());
         response.getWriter().write(jsonResponse);
     }
 }

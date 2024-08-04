@@ -1,11 +1,11 @@
 ### 팔로우 등록
-POST http://localhost:8082/follow/stores/1
+POST http://localhost:8083/follow/stores/9
 Content-Type: application/json
 Authorization: {{user1Auth}}
 
 
 ### 팔로우 취소
-DELETE http://localhost:8082/follow/stores/1
+DELETE http://localhost:8083/follow/stores/1
 Content-Type: application/json
 Authorization: {{user1Auth}}
 

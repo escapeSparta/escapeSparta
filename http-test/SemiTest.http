@@ -1,0 +1,173 @@
+### 회원가입 전 이메일 인증
+POST http://localhost:8080/users/mail
+Content-Type: application/json
+
+{
+  "email": "tpal071997@gmail.com",
+  "userType": "USER"
+}
+
+
+### 회원가입
+POST http://localhost:8080/users/signup
+Content-Type: application/json
+
+{
+  "name": "박세미",
+  "email": "tpal071997@gmail.com",
+  "password": "Test1234!",
+  "certificateCode": ""
+}
+
+
+### 로그인
+POST http://localhost:8080/users/login
+Content-Type: application/json
+
+
+{
+  "email": "tpal071997@gmail.com",
+  "password": "Test1234!"
+}
+> {% client.global.set("userAuth", response.headers.valueOf("Authorization")); %}
+
+
+
+
+### 회원가입 전 이메일 인증 - 매니저
+POST http://localhost:8080/users/mail
+Content-Type: application/json
+
+{
+  "email": "tpal0719@naver.com",
+  "userType": "MANAGER"
+}
+
+
+### 회원가입
+POST http://localhost:8080/users/signup
+Content-Type: application/json
+
+{
+  "name": "박세미",
+  "email": "tpal0719@naver.com",
+  "password": "Test1234!",
+  "certificateCode": ""
+}
+
+
+
+### 로그인
+POST http://localhost:8080/users/login
+Content-Type: application/json
+
+
+{
+  "email": "tpal0719@naver.com",
+  "password": "Test1234!"
+}
+> {% client.global.set("managerAuth", response.headers.valueOf("Authorization")); %}
+
+
+
+
+
+### 회원가입 전 이메일 인증 - admin
+POST http://localhost:8080/users/mail
+Content-Type: application/json
+
+{
+  "email": "yian95@naver.com",
+  "userType": "ADMIN"
+}
+
+
+### 회원가입
+POST http://localhost:8080/users/signup
+Content-Type: application/json
+
+{
+  "name": "박세미",
+  "email": "yian95@naver.com",
+  "password": "Test1234!",
+  "certificateCode": "1312178",
+  "adminKey": "asknd0enfdlvzn0a9wer2je09f8ashdnojff23g"
+}
+
+
+
+### 로그인
+POST http://localhost:8080/users/login
+Content-Type: application/json
+
+
+{
+  "email": "yian95@naver.com",
+  "password": "Test1234!"
+}
+> {% client.global.set("adminAuth", response.headers.valueOf("Authorization")); %}
+
+
+
+### 방탈출 카페 등록 요청 -> postman
+POST http://localhost:8082/manager/stores
+Authorization: {{managerAuth}}
+Content-Type: application/json
+
+{
+  "name": "방탈출 카페",
+  "address": "서울시 송파구 올림픽로 139-2",
+  "phoneNumber": "02-927-1097",
+  "workHours": "9:00 ~ 22:00",
+  "storeRegion": "SEOUL"
+}
+
+
+### 방탈출 카페 등록 승인
+PUT http://localhost:8081/admin/stores/1/approval
+Authorization: {{adminAuth}}
+
+
+### 방탈출 테마 등록 -> postman
+POST http://localhost:8082/manager/stores/themes
+Authorization: {{managerAuth}}
+Content-Type: application/json
+
+{
+  "storeId": 1,
+  "title": "살인사건2",
+  "contents": "정신병동에 살인사건 발생. 무슨 일일까?",
+  "level": 3,
+  "duration": 100,
+  "minPlayer": 1,
+  "maxPlayer": 4,
+  "themeType": "MYSTERY",
+  "price": 20000
+}
+
+### 테마 예약 시간대 등록
+POST http://localhost:8082/manager/stores/themes/1/theme-time
+Authorization: {{managerAuth}}
+Content-Type: application/json
+
+{
+  "startTime": "2025-07-30 13:00"
+}
+
+
+### 예약 생성
+POST http://localhost:8084/reservations
+Authorization: {{userAuth}}
+Content-Type: application/json
+
+{
+  "themeTimeId": 2,
+  "player": 4,
+  "price": 30000,
+  "paymentStatus": "COMPLETE"
+}
+
+
+### 예약후 결제
+POST http://localhost:8084/payments/reservations/1
+Content-Type: application/json

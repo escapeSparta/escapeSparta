@@ -1,6 +1,8 @@
 package com.sparta.domain.reservation.service;
 
 import com.sparta.domain.reservation.dto.*;
+import com.sparta.domain.reservation.entity.Reservation;
+import com.sparta.domain.reservation.repository.ReservationRepository;
 import com.sparta.domain.user.entity.User;
 import com.sparta.global.exception.customException.KafkaException;
 import com.sparta.global.exception.errorCode.KafkaErrorCode;
@@ -100,6 +102,7 @@ public class ReservationService {
             responseGetFutures.remove(requestId); // 응답을 받지 못했거나 에러가 발생하면 future를 제거
         }
     }
+
 
     private void sendReservationGetRequest(String requestId, Long userId) {
         KafkaReservationGetRequestDto createRequest = new KafkaReservationGetRequestDto(requestId, userId);
