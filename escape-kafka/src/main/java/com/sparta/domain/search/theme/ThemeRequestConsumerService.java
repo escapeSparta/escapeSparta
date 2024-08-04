@@ -36,7 +36,7 @@ public class ThemeRequestConsumerService {
     private final KafkaTemplate<String, KafkaThemeInfoResponseDto> kafkaThemeInfoTemplate;
     private final KafkaTemplate<String, KafkaThemeTimeResponseDto> kafkaThemeTimeTemplate;
 
-    @KafkaListener(topics = KafkaTopic.THEME_REQUEST_TOPIC, groupId = "${GROUP_ID}")
+    @KafkaListener(topics = KafkaTopic.THEME_REQUEST_TOPIC, groupId = "${GROUP_SEARCH_ID}")
     public void handleThemeRequest(KafkaThemeRequestDto request) {
         try {
             Store store = storeRepository.findByIdOrElseThrow(request.getStoreId());
@@ -59,7 +59,7 @@ public class ThemeRequestConsumerService {
         }
     }
 
-    @KafkaListener(topics = KafkaTopic.THEME_INFO_REQUEST_TOPIC, groupId = "${GROUP_ID}")
+    @KafkaListener(topics = KafkaTopic.THEME_INFO_REQUEST_TOPIC, groupId = "${GROUP_SEARCH_ID}")
     public void handleThemeInfoRequest(KafkaThemeInfoRequestDto request) {
         try {
             storeRepository.findByActiveStore(request.getStoreId());
@@ -73,7 +73,7 @@ public class ThemeRequestConsumerService {
         }
     }
 
-    @KafkaListener(topics = KafkaTopic.THEME_TIME_REQUEST_TOPIC, groupId = "${GROUP_ID}")
+    @KafkaListener(topics = KafkaTopic.THEME_TIME_REQUEST_TOPIC, groupId = "${GROUP_SEARCH_ID}")
     public void handleThemeTimeRequest(KafkaThemeTimeRequestDto request) {
         try {
             LocalDate day = LocalDateTimeUtil.parseDateStringToLocalDate(request.getDay());

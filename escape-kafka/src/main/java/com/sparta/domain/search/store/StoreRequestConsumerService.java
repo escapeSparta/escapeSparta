@@ -26,7 +26,7 @@ public class StoreRequestConsumerService {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
 
-    @KafkaListener(topics = KafkaTopic.STORE_REQUEST_TOPIC, groupId = "${GROUP_ID}")
+    @KafkaListener(topics = KafkaTopic.STORE_REQUEST_TOPIC, groupId = "${GROUP_SEARCH_ID}")
     public void handleStoreRequest(KafkaStoreRequestDto request) {
         try {
             Pageable pageable = PageUtil.createPageable(request.getPageNum(), request.getPageSize(), request.isDesc(), request.getSort());

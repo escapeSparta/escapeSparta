@@ -23,7 +23,7 @@ public class StoreResponseConsumerService {
     private final ConcurrentHashMap<String, CompletableFuture<Page<StoreResponseDto>>> responseFutures;
     private final ObjectMapper objectMapper;
 
-    @KafkaListener(topics = KafkaTopic.STORE_RESPONSE_TOPIC, groupId = "${GROUP_ID}")
+    @KafkaListener(topics = KafkaTopic.STORE_RESPONSE_TOPIC, groupId = "${GROUP_SEARCH_ID}")
     public void handleStoreResponse(String response) {
         KafkaStoreResponseDto responseDto = parseMessage(response);
         CompletableFuture<Page<StoreResponseDto>> future = responseFutures.remove(Objects.requireNonNull(responseDto).getRequestId());

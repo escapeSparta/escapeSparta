@@ -1,14 +1,6 @@
 package com.sparta.config;
 
-import com.sparta.domain.reservation.dto.*;
-import com.sparta.domain.review.dto.KafkaReviewRequestDto;
-import com.sparta.domain.review.dto.KafkaReviewResponseDto;
-import com.sparta.domain.theme.dto.KafkaThemeInfoRequestDto;
-import com.sparta.domain.theme.dto.KafkaThemeInfoResponseDto;
-import com.sparta.domain.theme.dto.KafkaThemeTimeRequestDto;
-import com.sparta.domain.theme.dto.KafkaThemeTimeResponseDto;
 import com.sparta.errorHandler.KafkaErrorHandler;
-import com.sparta.global.exception.customException.GlobalCustomException;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;

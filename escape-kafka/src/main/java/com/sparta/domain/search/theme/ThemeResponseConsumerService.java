@@ -25,7 +25,7 @@ public class ThemeResponseConsumerService {
     private final ConcurrentHashMap<String, CompletableFuture<List<ThemeTimeResponseDto>>> responseThemeTimeFutures;
     private final ObjectMapper objectMapper;
 
-    @KafkaListener(topics = KafkaTopic.THEME_RESPONSE_TOPIC, groupId = "${GROUP_ID}")
+    @KafkaListener(topics = KafkaTopic.THEME_RESPONSE_TOPIC, groupId = "${GROUP_SEARCH_ID}")
     public void handleThemeResponse(String response) {
         KafkaThemeResponseDto responseDto = parseThemeMessage(response);
         CompletableFuture<Page<ThemeResponseDto>> future = responseThemeFutures.remove(Objects.requireNonNull(responseDto).getRequestId());
@@ -44,7 +44,7 @@ public class ThemeResponseConsumerService {
         }
     }
 
-    @KafkaListener(topics = KafkaTopic.THEME_INFO_RESPONSE_TOPIC, groupId = "${GROUP_ID}")
+    @KafkaListener(topics = KafkaTopic.THEME_INFO_RESPONSE_TOPIC, groupId = "${GROUP_SEARCH_ID}")
     public void handleThemeInfoResponse(KafkaThemeInfoResponseDto response) {
         CompletableFuture<ThemeInfoResponseDto> future = responseThemeInfoFutures.remove(Objects.requireNonNull(response).getRequestId());
         if (future != null) {
@@ -53,7 +53,7 @@ public class ThemeResponseConsumerService {
         }
     }
 
-    @KafkaListener(topics = KafkaTopic.THEME_TIME_RESPONSE_TOPIC, groupId = "${GROUP_ID}")
+    @KafkaListener(topics = KafkaTopic.THEME_TIME_RESPONSE_TOPIC, groupId = "${GROUP_SEARCH_ID}")
     public void handleThemeTimeResponse(KafkaThemeTimeResponseDto response) {
         CompletableFuture<List<ThemeTimeResponseDto>> future = responseThemeTimeFutures.remove(Objects.requireNonNull(response).getRequestId());
         if (future != null) {

@@ -25,7 +25,7 @@ public class ReservationResponseService {
     private final ConcurrentHashMap<String, CompletableFuture<ReservationCreateResponseDto>> responseCreateFutures;
     private final ConcurrentHashMap<String, CompletableFuture<List<ReservationResponseDto>>> responseGetFutures;
 
-    @KafkaListener(topics = KafkaTopic.RESERVATION_CREATE_RESPONSE_TOPIC, groupId = "${GROUP_ID}")
+    @KafkaListener(topics = KafkaTopic.RESERVATION_CREATE_RESPONSE_TOPIC, groupId = "${GROUP_RESERVATION_ID}")
     public void handleReservationCreateResponse(KafkaReservationCreateResponseDto response) {
         CompletableFuture<ReservationCreateResponseDto> future = responseCreateFutures.remove(Objects.requireNonNull(response).getRequestId());
         if (future != null) {
@@ -34,7 +34,7 @@ public class ReservationResponseService {
         }
     }
 
-    @KafkaListener(topics = KafkaTopic.RESERVATION_GET_RESPONSE_TOPIC, groupId = "${GROUP_ID}")
+    @KafkaListener(topics = KafkaTopic.RESERVATION_GET_RESPONSE_TOPIC, groupId = "${GROUP_RESERVATION_ID}")
     public void handleReservationGetResponse(KafkaReservationGetResponseDto response) {
         CompletableFuture<List<ReservationResponseDto>> future = responseGetFutures.remove(Objects.requireNonNull(response).getRequestId());
         if (future != null) {

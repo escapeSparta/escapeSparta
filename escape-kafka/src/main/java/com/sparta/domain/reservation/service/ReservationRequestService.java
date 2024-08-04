@@ -38,7 +38,7 @@ public class ReservationRequestService {
     private final KafkaEmailProducer kafkaEmailProducer;
 
     @Transactional
-    @KafkaListener(topics = KafkaTopic.RESERVATION_CREATE_REQUEST_TOPIC, groupId = "${GROUP_ID}")
+    @KafkaListener(topics = KafkaTopic.RESERVATION_CREATE_REQUEST_TOPIC, groupId = "${GROUP_RESERVATION_ID}")
     public void handleCreateReservationRequest(KafkaReservationCreateRequestDto requestDto) {
         try {
             User user = userRepository.findByIdOrElseThrow(requestDto.getUserId());
@@ -71,7 +71,7 @@ public class ReservationRequestService {
     }
 
     @Transactional
-    @KafkaListener(topics = KafkaTopic.RESERVATION_DELETE_REQUEST_TOPIC, groupId = "${GROUP_ID}")
+    @KafkaListener(topics = KafkaTopic.RESERVATION_DELETE_REQUEST_TOPIC, groupId = "${GROUP_RESERVATION_ID}")
     public void handleDeleteReservationRequest(KafkaReservationDeleteRequestDto requestDto) {
         try {
             User user = userRepository.findByIdOrElseThrow(requestDto.getUserId());
@@ -88,7 +88,7 @@ public class ReservationRequestService {
     }
 
     @Transactional
-    @KafkaListener(topics = KafkaTopic.RESERVATION_GET_REQUEST_TOPIC, groupId = "${GROUP_ID}")
+    @KafkaListener(topics = KafkaTopic.RESERVATION_GET_REQUEST_TOPIC, groupId = "${GROUP_RESERVATION_ID}")
     public void handleGetReservationRequest(KafkaReservationGetRequestDto requestDto) {
         try {
             User user = userRepository.findByIdOrElseThrow(requestDto.getUserId());

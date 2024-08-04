@@ -4,7 +4,7 @@ Content-Type: application/json
 Authorization: {{user1Auth}}
 
 {
-  "themeTimeId": 1,
+  "themeTimeId": 3,
   "player": 4,
   "price": 50000,
   "paymentStatus": "COMPLETE"

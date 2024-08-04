@@ -20,7 +20,7 @@ public class ReviewResponseConsumerService {
 
     private final ConcurrentHashMap<String, CompletableFuture<List<ReviewResponseDto>>> responseFutures;
 
-    @KafkaListener(topics = KafkaTopic.REVIEW_RESPONSE_TOPIC, groupId = "${GROUP_ID}")
+    @KafkaListener(topics = KafkaTopic.REVIEW_RESPONSE_TOPIC, groupId = "${GROUP_SEARCH_ID}")
     public void handleReviewResponse(KafkaReviewResponseDto reviewResponse) {
         CompletableFuture<List<ReviewResponseDto>> future = responseFutures.remove(reviewResponse.getRequestId());
         if (future != null) {

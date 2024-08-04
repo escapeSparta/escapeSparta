@@ -13,7 +13,7 @@ public class KafkaEmailConsumer {
 
     private final AmazonSESService emailService;
 
-    @KafkaListener(topics = KafkaTopic.PAYMENT_TOPIC, groupId = "${spring.kafka.consumer.group-id}")
+    @KafkaListener(topics = KafkaTopic.PAYMENT_TOPIC, groupId = "${GROUP_RESERVATION_ID}")
     public void createReservationSendEmail(String message) {
 //        Reservation reservation = parseMessage(message);
 
@@ -22,7 +22,7 @@ public class KafkaEmailConsumer {
         }
     }
 
-    @KafkaListener(topics = KafkaTopic.PAYMENT_DELETE_TOPIC, groupId = "${spring.kafka.consumer.group-id}")
+    @KafkaListener(topics = KafkaTopic.PAYMENT_DELETE_TOPIC, groupId = "${GROUP_RESERVATION_ID}")
     public void deleteReservationSendEmail(String message) {
 //        Reservation reservation = parseMessage(message);
 

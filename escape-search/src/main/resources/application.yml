@@ -40,7 +40,7 @@ spring:
   kafka:
     bootstrap-servers: ${BOOTSTRAP_SERVER}
     consumer:
-      group-id: ${GROUP_ID}
+      group-id: ${GROUP_SEARCH_ID}
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonSerializer

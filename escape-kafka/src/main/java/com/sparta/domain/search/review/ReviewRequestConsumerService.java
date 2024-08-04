@@ -27,7 +27,7 @@ public class ReviewRequestConsumerService {
     private final StoreRepository storeRepository;
     private final KafkaTemplate<String, KafkaReviewResponseDto> kafkaTemplate;
 
-    @KafkaListener(topics = KafkaTopic.REVIEW_REQUEST_TOPIC, groupId = "${GROUP_ID}")
+    @KafkaListener(topics = KafkaTopic.REVIEW_REQUEST_TOPIC, groupId = "${GROUP_SEARCH_ID}")
     public void handleReviewRequest(KafkaReviewRequestDto reviewRequest) {
         try {
             storeRepository.findByActiveStore(reviewRequest.getStoreId());
