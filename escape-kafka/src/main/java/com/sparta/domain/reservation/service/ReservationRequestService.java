@@ -30,7 +30,6 @@ public class ReservationRequestService {
 
     private final KafkaTemplate<String, KafkaReservationCreateResponseDto> kafkaReservationCreateTemplate;
     private final KafkaTemplate<String, KafkaReservationGetResponseDto> kafkaReservationGetTemplate;
-    private final KafkaTemplate<String, GlobalCustomException> kafkaErrorTemplate;
 
     private final ReservationRepository reservationRepository;
     private final ThemeTimeRepository themeTimeRepository;
@@ -66,7 +65,6 @@ public class ReservationRequestService {
             kafkaReservationCreateTemplate.send(KafkaTopic.RESERVATION_CREATE_RESPONSE_TOPIC, responseDto);
         }catch (GlobalCustomException e){
             log.error("GlobalCustomException 에러 발생: {}", e.getMessage());
-//            kafkaErrorTemplate.send(KafkaTopic.ERROR_TOPIC, e);
         }
     }
 
