@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sparta.domain.store.dto.KafkaStoreResponseDto;
 import com.sparta.domain.store.dto.StoreResponseDto;
 import com.sparta.global.kafka.KafkaTopic;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -26,7 +27,9 @@ public class StoreResponseConsumerService {
     @KafkaListener(topics = KafkaTopic.STORE_RESPONSE_TOPIC, groupId = "${GROUP_SEARCH_ID}")
     public void handleStoreResponse(String response) {
         KafkaStoreResponseDto responseDto = parseMessage(response);
-        CompletableFuture<Page<StoreResponseDto>> future = responseFutures.remove(Objects.requireNonNull(responseDto).getRequestId());
+        log.error("Current keys in responseFutures: {}", responseFutures.keySet());
+        log.error("StoreService responseFutures hash: {}", System.identityHashCode(responseFutures));
+        CompletableFuture<Page<StoreResponseDto>> future = responseFutures.remove(responseDto.getRequestId());
         if (future != null) {
             log.error("@@@@");
             future.complete(responseDto.getResponseDtos());

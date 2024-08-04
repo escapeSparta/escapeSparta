@@ -36,7 +36,6 @@ public class StoreRequestConsumerService {
 
             try {
                 String message = objectMapper.writeValueAsString(response);
-                log.error("2222");
                 kafkaTemplate.send(KafkaTopic.STORE_RESPONSE_TOPIC, message);
             } catch (Exception e) {
                 log.error("직열화 에러: {}", e.getMessage());

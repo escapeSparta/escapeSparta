@@ -8,6 +8,7 @@ import com.sparta.domain.store.entity.StoreRegion;
 import com.sparta.global.exception.customException.KafkaException;
 import com.sparta.global.exception.errorCode.KafkaErrorCode;
 import com.sparta.global.kafka.KafkaTopic;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -44,6 +45,8 @@ public class StoreService {
         String requestId = UUID.randomUUID().toString();
         CompletableFuture<Page<StoreResponseDto>> future = new CompletableFuture<>();
         responseFutures.put(requestId, future);
+        log.error("{}", responseFutures.keySet());
+        log.error("StoreService responseFutures hash: {}", System.identityHashCode(responseFutures));
         sendReviewRequest(requestId, pageNum, pageSize, isDesc, keyWord, storeRegion, sort);
 
         try {
