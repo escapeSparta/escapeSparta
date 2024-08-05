@@ -1,7 +1,6 @@
 package com.sparta.domain.reservation.service;
 
 import com.sparta.domain.reservation.dto.*;
-import com.sparta.domain.reservation.emailService.KafkaEmailProducer;
 import com.sparta.domain.reservation.entity.Reservation;
 import com.sparta.domain.reservation.entity.ReservationStatus;
 import com.sparta.domain.reservation.repository.ReservationRepository;
@@ -22,6 +21,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -30,12 +32,12 @@ public class ReservationRequestService {
 
     private final KafkaTemplate<String, KafkaReservationCreateResponseDto> kafkaReservationCreateTemplate;
     private final KafkaTemplate<String, KafkaReservationGetResponseDto> kafkaReservationGetTemplate;
+    private final ConcurrentHashMap<String, CompletableFuture<ReservationCreateResponseDto>> responseCreateFutures;
+    private final ConcurrentHashMap<String, CompletableFuture<List<ReservationResponseDto>>> responseGetFutures;
 
     private final ReservationRepository reservationRepository;
     private final ThemeTimeRepository themeTimeRepository;
     private final UserRepository userRepository;
-    private final KafkaEmailProducer kafkaEmailProducer;
-
     @Transactional
     @KafkaListener(topics = KafkaTopic.RESERVATION_CREATE_REQUEST_TOPIC, groupId = "${GROUP_RESERVATION_ID}")
     public void handleCreateReservationRequest(KafkaReservationCreateRequestDto requestDto) {
@@ -61,10 +63,17 @@ public class ReservationRequestService {
 
             KafkaReservationCreateResponseDto responseDto = new KafkaReservationCreateResponseDto(requestDto.getRequestId()
                     , new ReservationCreateResponseDto(reservationRepository.save(reservation)), user.getEmail());
-
-            kafkaReservationCreateTemplate.send(KafkaTopic.RESERVATION_CREATE_RESPONSE_TOPIC, responseDto);
+            handleReservationCreateResponse(responseDto);
+//            kafkaReservationCreateTemplate.send(KafkaTopic.RESERVATION_CREATE_RESPONSE_TOPIC, responseDto);
         }catch (GlobalCustomException e){
             log.error("GlobalCustomException 에러 발생: {}", e.getMessage());
+        }
+    }
+
+    private void handleReservationCreateResponse(KafkaReservationCreateResponseDto response) {
+        CompletableFuture<ReservationCreateResponseDto> future = responseCreateFutures.remove(Objects.requireNonNull(response).getRequestId());
+        if (future != null) {
+            future.complete(response.getResponseDto());
         }
     }
 
@@ -79,7 +88,6 @@ public class ReservationRequestService {
             reservation.updateReservationStatus();
             ThemeTime themeTime = reservation.getThemeTime();
             themeTime.updateThemeTimeStatus();
-            kafkaEmailProducer.sendDeleteReservationEmail(KafkaTopic.PAYMENT_DELETE_TOPIC, user.getEmail());
         }catch (GlobalCustomException e){
             log.error("GlobalCustomException 에러 발생: {}", e.getMessage());
         }
@@ -93,9 +101,17 @@ public class ReservationRequestService {
             List<Reservation> reservationList = reservationRepository.findByUser(user);
             List<ReservationResponseDto> responseDtoList = reservationList.stream().map(ReservationResponseDto::new).toList();
             KafkaReservationGetResponseDto responseDto = new KafkaReservationGetResponseDto(requestDto.getRequestId(), responseDtoList);
-            kafkaReservationGetTemplate.send(KafkaTopic.RESERVATION_GET_RESPONSE_TOPIC, responseDto);
+            handleReservationGetResponse(responseDto);
+//            kafkaReservationGetTemplate.send(KafkaTopic.RESERVATION_GET_RESPONSE_TOPIC, responseDto);
         }catch (GlobalCustomException e){
             log.error("GlobalCustomException 에러 발생: {}", e.getMessage());
+        }
+    }
+
+    private void handleReservationGetResponse(KafkaReservationGetResponseDto response) {
+        CompletableFuture<List<ReservationResponseDto>> future = responseGetFutures.remove(Objects.requireNonNull(response).getRequestId());
+        if (future != null) {
+            future.complete(response.getResponseDtoList());
         }
     }
 

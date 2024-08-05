@@ -50,19 +50,25 @@ public class StoreService {
         sendReviewRequest(requestId, pageNum, pageSize, isDesc, keyWord, storeRegion, sort);
 
         try {
-            return future.get(3, TimeUnit.SECONDS);
+            return future.get();
         } catch (InterruptedException | ExecutionException e) {
             throw new RuntimeException("리뷰 response 실패", e);
-        }catch (TimeoutException e) {
-            throw new KafkaException(KafkaErrorCode.KAFKA_ERROR);
-        } finally {
-            responseFutures.remove(requestId); // 응답을 받지 못했거나 에러가 발생하면 future를 제거
         }
+
+//        try {
+//            return future.get(3, TimeUnit.SECONDS);
+//        } catch (InterruptedException | ExecutionException e) {
+//            throw new RuntimeException("리뷰 response 실패", e);
+//        }catch (TimeoutException e) {
+//            throw new KafkaException(KafkaErrorCode.KAFKA_ERROR);
+//        } finally {
+//            responseFutures.remove(requestId); // 응답을 받지 못했거나 에러가 발생하면 future를 제거
+//        }
 
     }
 
     private void sendReviewRequest(String requestId, int pageNum, int pageSize, boolean isDesc, String keyWord, StoreRegion storeRegion, String sort) {
-        KafkaStoreRequestDto reviewRequest = new KafkaStoreRequestDto(requestId, pageNum, pageSize, isDesc, keyWord, storeRegion, sort);
-        kafkaTemplate.send(KafkaTopic.STORE_REQUEST_TOPIC, reviewRequest);
+        KafkaStoreRequestDto storeRequest = new KafkaStoreRequestDto(requestId, pageNum, pageSize, isDesc, keyWord, storeRegion, sort);
+        kafkaTemplate.send(KafkaTopic.STORE_REQUEST_TOPIC, storeRequest);
     }
 }

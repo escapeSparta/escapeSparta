@@ -17,6 +17,8 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +28,7 @@ public class ReviewRequestConsumerService {
     private final ThemeRepository themeRepository;
     private final StoreRepository storeRepository;
     private final KafkaTemplate<String, KafkaReviewResponseDto> kafkaTemplate;
+    private final ConcurrentHashMap<String, CompletableFuture<List<ReviewResponseDto>>> responseFutures;
 
     @KafkaListener(topics = KafkaTopic.REVIEW_REQUEST_TOPIC, groupId = "${GROUP_SEARCH_ID}")
     public void handleReviewRequest(KafkaReviewRequestDto reviewRequest) {
@@ -38,9 +41,18 @@ public class ReviewRequestConsumerService {
 
             KafkaReviewResponseDto reviewResponse = new KafkaReviewResponseDto(reviewRequest.getRequestId(), responseDtoList);
             log.error("1111");
-            kafkaTemplate.send(KafkaTopic.REVIEW_RESPONSE_TOPIC, reviewResponse);
+            handleReviewResponse(reviewResponse);
+//            kafkaTemplate.send(KafkaTopic.REVIEW_RESPONSE_TOPIC, reviewResponse);
         }catch (GlobalCustomException e){
             log.error("GlobalCustomException 에러 발생: {}", e.getMessage());
+        }
+    }
+
+    private void handleReviewResponse(KafkaReviewResponseDto reviewResponse) {
+        CompletableFuture<List<ReviewResponseDto>> future = responseFutures.remove(reviewResponse.getRequestId());
+        if (future != null) {
+            log.error("!!!!");
+            future.complete(reviewResponse.getReviewResponses());
         }
     }
 }

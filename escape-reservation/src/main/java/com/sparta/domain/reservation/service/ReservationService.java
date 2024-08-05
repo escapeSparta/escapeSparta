@@ -1,8 +1,6 @@
 package com.sparta.domain.reservation.service;
 
 import com.sparta.domain.reservation.dto.*;
-import com.sparta.domain.reservation.entity.Reservation;
-import com.sparta.domain.reservation.repository.ReservationRepository;
 import com.sparta.domain.user.entity.User;
 import com.sparta.global.exception.customException.KafkaException;
 import com.sparta.global.exception.errorCode.KafkaErrorCode;
@@ -30,6 +28,8 @@ public class ReservationService {
     private final KafkaTemplate<String, KafkaReservationDeleteRequestDto> kafkaReservationDeleteTemplate;
     private final KafkaTemplate<String, KafkaReservationGetRequestDto> kafkaReservationGetTemplate;
 
+    private final KafkaEmailProducer kafkaEmailProducer;
+
     /**
      * 예약 생성
      * @param requestDto 예약 생성에 필요한 데이터
@@ -42,6 +42,8 @@ public class ReservationService {
         CompletableFuture<ReservationCreateResponseDto> future = new CompletableFuture<>();
         responseCreateFutures.put(requestId, future);
         sendReservationCreateRequest(requestId, requestDto, user.getId());
+
+        kafkaEmailProducer.sendCreateReservationEmail(KafkaTopic.PAYMENT_TOPIC, user.getEmail());
 
         // Kafka로 요청을 전송하고 응답을 비동기적으로 기다림
         try {
@@ -71,6 +73,7 @@ public class ReservationService {
         CompletableFuture<Void> future = new CompletableFuture<>();
         responseDeleteFutures.put(requestId, future);
         sendReservationDeleteRequest(requestId, reservationId, user.getId());
+        kafkaEmailProducer.sendDeleteReservationEmail(KafkaTopic.PAYMENT_DELETE_TOPIC, user.getEmail());
     }
 
     private void sendReservationDeleteRequest(String requestId, Long reservationId, Long userId) {
