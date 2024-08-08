@@ -14,16 +14,6 @@ import java.util.UUID;
 @Component
 public class S3Util {
 
-    @Value("${cloud.aws.defaultPath}")
-    private String defaultImageUrl;
-
-    public static String DEFAULT_IMAGE_URL;
-
-    @PostConstruct
-    private void init() {
-        DEFAULT_IMAGE_URL = defaultImageUrl;
-    }
-
     private static final String STORE_DIR = "store";
     private static final String THEME_DIR = "theme";
 

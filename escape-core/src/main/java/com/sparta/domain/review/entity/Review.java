@@ -39,7 +39,7 @@ public class Review extends TimeStamped {
     @JoinColumn(name = "theme_id", nullable = false)
     private Theme theme;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reservation_id", nullable = false)
     private Reservation reservation;
 
