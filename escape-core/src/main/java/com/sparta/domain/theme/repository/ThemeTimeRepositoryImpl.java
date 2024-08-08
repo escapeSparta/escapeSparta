@@ -34,6 +34,7 @@ public class ThemeTimeRepositoryImpl implements ThemeTimeRepositoryCustom{
         return jpaQueryFactory.selectFrom(themeTime)
                 .where(themeTime.startTime.between(startOfDay, endOfDay)
                         .and(themeTime.theme.id.eq(themeId)))
+                .orderBy(themeTime.startTime.asc())
                 .fetch();
     }
 

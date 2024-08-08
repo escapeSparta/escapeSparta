@@ -54,7 +54,8 @@ public class ReservationRepositoryImpl implements ReservationRepositoryCustom{
         JPAQuery<Reservation> query = jpaQueryFactory.selectFrom(reservation)
                 .leftJoin(reservation.theme, theme).fetchJoin()
                 .leftJoin(theme.store, store).fetchJoin()
-                .where(reservation.user.eq(user));
+                .where(reservation.user.eq(user))
+                .orderBy(reservation.themeTime.startTime.desc());
 
         return query.fetch();
     }
