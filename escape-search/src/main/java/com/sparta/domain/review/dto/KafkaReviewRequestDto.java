@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class KafkaReviewRequestDto {
+public class KafkaReviewRequestDto{
     private String requestId;
     private Long storeId;
     private Long themeId;

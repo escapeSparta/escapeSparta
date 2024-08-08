@@ -7,6 +7,7 @@ import com.sparta.domain.theme.entity.Theme;
 import com.sparta.domain.theme.entity.ThemeTime;
 import com.sparta.domain.theme.repository.ThemeRepository;
 import com.sparta.domain.theme.repository.ThemeTimeRepository;
+import com.sparta.global.exception.customException.GlobalCustomException;
 import com.sparta.global.kafka.KafkaTopic;
 import com.sparta.global.util.LocalDateTimeUtil;
 import com.sparta.global.util.PageUtil;
@@ -35,16 +36,20 @@ public class ThemeConsumerService {
     private final ConcurrentHashMap<String, CompletableFuture<ThemeInfoResponseDto>> responseThemeInfoFutures;
     private final ConcurrentHashMap<String, CompletableFuture<List<ThemeTimeResponseDto>>> responseThemeTimeFutures;
 
-    @KafkaListener(topics = KafkaTopic.THEME_REQUEST_TOPIC, groupId = "${GROUP_ID}")
+    @KafkaListener(topics = KafkaTopic.THEME_REQUEST_TOPIC, groupId = "${spring.kafka.consumer.group-id}")
     public void handleThemeRequest(KafkaThemeRequestDto request) {
-        Store store = storeRepository.findByIdOrElseThrow(request.getStoreId());
+        try {
+            Store store = storeRepository.findByIdOrElseThrow(request.getStoreId());
 
-        Pageable pageable = PageUtil.createPageable(request.getPageNum(), request.getPageSize(), request.isDesc(), request.getSort());
-        Page<Theme> themes = themeRepository.findByStore(store, pageable);
-        Page<ThemeResponseDto> themeResponseDtoPage =  themes.map(ThemeResponseDto::new);
+            Pageable pageable = PageUtil.createPageable(request.getPageNum(), request.getPageSize(), request.isDesc(), request.getSort());
+            Page<Theme> themes = themeRepository.findByStore(store, pageable);
+            Page<ThemeResponseDto> themeResponseDtoPage = themes.map(ThemeResponseDto::new);
 
-        KafkaThemeResponseDto responseDto = new KafkaThemeResponseDto(request.getRequestId(), themeResponseDtoPage);
-        handleThemeResponse(responseDto);
+            KafkaThemeResponseDto responseDto = new KafkaThemeResponseDto(request.getRequestId(), themeResponseDtoPage);
+            handleThemeResponse(responseDto);
+        }catch (GlobalCustomException e){
+            log.error(e.getMessage());
+        }
     }
 
     private void handleThemeResponse(KafkaThemeResponseDto response) {
@@ -54,13 +59,17 @@ public class ThemeConsumerService {
         }
     }
 
-    @KafkaListener(topics = KafkaTopic.THEME_INFO_REQUEST_TOPIC, groupId = "${GROUP_ID}")
+    @KafkaListener(topics = KafkaTopic.THEME_INFO_REQUEST_TOPIC, groupId = "${spring.kafka.consumer.group-id}")
     public void handleThemeInfoRequest(KafkaThemeInfoRequestDto request) {
-        storeRepository.findByActiveStore(request.getStoreId());
-        Theme theme = themeRepository.findByActiveTheme(request.getThemeId());
-        ThemeInfoResponseDto themeInfoResponseDto = new ThemeInfoResponseDto(theme);
-        KafkaThemeInfoResponseDto responseDto = new KafkaThemeInfoResponseDto(request.getRequestId(), themeInfoResponseDto);
-        handleThemeInfoResponse(responseDto);
+        try {
+            storeRepository.findByActiveStore(request.getStoreId());
+            Theme theme = themeRepository.findByActiveTheme(request.getThemeId());
+            ThemeInfoResponseDto themeInfoResponseDto = new ThemeInfoResponseDto(theme);
+            KafkaThemeInfoResponseDto responseDto = new KafkaThemeInfoResponseDto(request.getRequestId(), themeInfoResponseDto);
+            handleThemeInfoResponse(responseDto);
+        }catch (GlobalCustomException e){
+            log.error(e.getMessage());
+        }
     }
 
     private void handleThemeInfoResponse(KafkaThemeInfoResponseDto response) {
@@ -70,15 +79,19 @@ public class ThemeConsumerService {
         }
     }
 
-    @KafkaListener(topics = KafkaTopic.THEME_TIME_REQUEST_TOPIC, groupId = "${GROUP_ID}")
+    @KafkaListener(topics = KafkaTopic.THEME_TIME_REQUEST_TOPIC, groupId = "${spring.kafka.consumer.group-id}")
     public void handleThemeTimeRequest(KafkaThemeTimeRequestDto request) {
-        LocalDate day = LocalDateTimeUtil.parseDateStringToLocalDate(request.getDay());
-        storeRepository.findByActiveStore(request.getStoreId());
-        List<ThemeTime> themeTimeList = themeTimeRepository.findThemeTimesByDate(request.getThemeId(), day);
-        List<ThemeTimeResponseDto> themeTimeResponseDtoList = themeTimeList.stream().map(ThemeTimeResponseDto::new).toList();
+        try {
+            LocalDate day = LocalDateTimeUtil.parseDateStringToLocalDate(request.getDay());
+            storeRepository.findByActiveStore(request.getStoreId());
+            List<ThemeTime> themeTimeList = themeTimeRepository.findThemeTimesByDate(request.getThemeId(), day);
+            List<ThemeTimeResponseDto> themeTimeResponseDtoList = themeTimeList.stream().map(ThemeTimeResponseDto::new).toList();
 
-        KafkaThemeTimeResponseDto responseDto = new KafkaThemeTimeResponseDto(request.getRequestId(), themeTimeResponseDtoList);
-        handleThemeTimeResponse(responseDto);
+            KafkaThemeTimeResponseDto responseDto = new KafkaThemeTimeResponseDto(request.getRequestId(), themeTimeResponseDtoList);
+            handleThemeTimeResponse(responseDto);
+        }catch (GlobalCustomException e){
+            log.error(e.getMessage());
+        }
     }
 
     private void handleThemeTimeResponse(KafkaThemeTimeResponseDto response) {

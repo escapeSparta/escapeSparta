@@ -34,9 +34,6 @@ public class ReviewService {
      */
     @Transactional
     public ReviewCreateResponseDto createReview(ReviewCreateRequestDto reviewCreateRequestDto, User user) {
-        //데이터 재활용 가능
-//        Store store = storeRepository.findByActiveStore(createReviewRequestDto.getStoreId());
-//        Theme theme = themeRepository.findByActiveTheme(createReviewRequestDto.getThemeId());
         Reservation reservation = reservationRepository.findByIdAndUserOrElseThrow(reviewCreateRequestDto.getReservationId(), user);
 
         reviewRepository.checkIfAlreadyReview(user, reservation);
@@ -74,7 +71,6 @@ public class ReviewService {
      */
     public ReviewResponseDto getReview(Long reviewId) {
         Review review = reviewRepository.findByReview(reviewId);
-
         return new ReviewResponseDto(review);
     }
 

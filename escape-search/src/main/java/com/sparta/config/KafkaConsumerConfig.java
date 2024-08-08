@@ -1,32 +1,35 @@
 package com.sparta.config;
 
-
 import com.sparta.domain.review.dto.KafkaReviewRequestDto;
 import com.sparta.domain.review.dto.KafkaReviewResponseDto;
 import com.sparta.domain.theme.dto.KafkaThemeInfoRequestDto;
 import com.sparta.domain.theme.dto.KafkaThemeInfoResponseDto;
 import com.sparta.domain.theme.dto.KafkaThemeTimeRequestDto;
 import com.sparta.domain.theme.dto.KafkaThemeTimeResponseDto;
+import com.sparta.global.exception.customException.GlobalCustomException;
+import com.sparta.kafkaError.KafkaErrorHandler;
+import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
-import org.springframework.kafka.core.*;
+import org.springframework.kafka.core.ConsumerFactory;
+import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
-import org.springframework.kafka.support.serializer.JsonSerializer;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Configuration
 @EnableKafka
-public class KafkaConfig {
+@RequiredArgsConstructor
+public class KafkaConsumerConfig {
+
+    private final KafkaErrorHandler kafkaErrorHandler;
 
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
@@ -35,17 +38,8 @@ public class KafkaConfig {
     private String consumerGroupId;
 
     @Bean
-    public <T> ProducerFactory<String, T> producerFactory() {
-        Map<String, Object> configProps = new HashMap<>();
-        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
-        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-        return new DefaultKafkaProducerFactory<>(configProps);
-    }
-
-    @Bean
-    public <T> KafkaTemplate<String, T> kafkaTemplate() {
-        return new KafkaTemplate<>(producerFactory());
+    public ConcurrentKafkaListenerContainerFactory<String, String> KafkaListenerContainerFactory() {
+        return kafkaListenerContainerFactory(String.class);
     }
 
     @Bean
@@ -79,9 +73,16 @@ public class KafkaConfig {
     }
 
     @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, GlobalCustomException> exceptionKafkaListenerContainerFactory() {
+        return kafkaListenerContainerFactory(GlobalCustomException.class);
+    }
+
+
+    @Bean
     public <T> ConcurrentKafkaListenerContainerFactory<String, T> kafkaListenerContainerFactory(Class<T> targetType) {
         ConcurrentKafkaListenerContainerFactory<String, T> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory(targetType));
+        factory.setCommonErrorHandler(kafkaErrorHandler.customErrorHandler());
         return factory;
     }
 
@@ -96,7 +97,6 @@ public class KafkaConfig {
         configProps.put(ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS, StringDeserializer.class.getName());
         configProps.put(JsonDeserializer.VALUE_DEFAULT_TYPE, targetType.getName());
         configProps.put(JsonDeserializer.TRUSTED_PACKAGES, "com.sparta.domain.*");
-
 
         return new DefaultKafkaConsumerFactory<>(configProps);
     }

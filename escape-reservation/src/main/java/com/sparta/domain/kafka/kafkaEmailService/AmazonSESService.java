@@ -13,7 +13,6 @@ public class AmazonSESService {
     private final AmazonSimpleEmailService amazonSimpleEmailService;
 
     public void sendEmail(String email, String subject, String body) {
-        log.error("{} !!", email);
         SendEmailRequest request = new SendEmailRequest()
                 .withDestination(new Destination().withToAddresses(email))
                 .withMessage(new Message()

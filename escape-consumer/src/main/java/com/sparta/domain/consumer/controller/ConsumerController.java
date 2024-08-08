@@ -6,7 +6,6 @@ import com.sparta.domain.consumer.service.ConsumerService;
 import com.sparta.domain.user.dto.response.UserResponseDto;
 import com.sparta.domain.user.entity.User;
 import com.sparta.domain.user.service.UserService;
-import com.sparta.feign.EscapeReservationClient;
 import com.sparta.global.response.ResponseMessage;
 import com.sparta.global.security.UserDetailsImpl;
 import jakarta.validation.Valid;
@@ -25,7 +24,6 @@ public class ConsumerController {
 
     private final UserService userService;
     private final ConsumerService consumerService;
-    private final EscapeReservationClient escapeReservationClient;
 
     // TODO : 로그인한 유저 프로필 조회
     @GetMapping("/profile")
@@ -80,10 +78,5 @@ public class ConsumerController {
         return ResponseEntity.status(HttpStatus.OK).body(responseMessage);
     }
 
-    @GetMapping("/reservations")
-    public String getReservation(){
-        log.error("hihihi");
-        return escapeReservationClient.getLost();
-    }
 }
 

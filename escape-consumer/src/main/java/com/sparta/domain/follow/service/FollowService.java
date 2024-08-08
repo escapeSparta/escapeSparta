@@ -51,6 +51,11 @@ public class FollowService {
         followRepository.delete(follow);
     }
 
+    /**
+     * 팔로우한 카페 조회
+     * @param user 로그인 유저
+     * @return 팔로우한 카페 리턴
+     */
     @Transactional(readOnly = true)
     public List<FollowStoreResponseDto> getFollowStores(User user) {
         List<Follow> follow = followRepository.findByGetStores(user);

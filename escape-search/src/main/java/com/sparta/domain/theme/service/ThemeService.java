@@ -1,6 +1,8 @@
 package com.sparta.domain.theme.service;
 
 import com.sparta.domain.theme.dto.*;
+import com.sparta.global.exception.customException.KafkaException;
+import com.sparta.global.exception.errorCode.KafkaErrorCode;
 import com.sparta.global.kafka.KafkaTopic;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,9 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.*;
 
 @Service
 @RequiredArgsConstructor
@@ -39,18 +39,20 @@ public class ThemeService {
         String requestId = UUID.randomUUID().toString();
         CompletableFuture<Page<ThemeResponseDto>> future = new CompletableFuture<>();
         responseThemeFutures.put(requestId, future);
-        sendReviewRequest(requestId, storeId, pageNum, pageSize, isDesc, sort);
+        sendThemeRequest(requestId, storeId, pageNum, pageSize, isDesc, sort);
 
         try {
-            return future.get(); // 응답을 기다림
+            return future.get(3, TimeUnit.SECONDS); // 응답을 기다림
         } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException("방탈출 카페 response 실패", e);
+            throw new KafkaException(KafkaErrorCode.KAFKA_SERVER_ERROR);
+        }catch (TimeoutException e){
+            throw new KafkaException(KafkaErrorCode.KAFKA_RESPONSE_ERROR);
         }
     }
 
-    private void sendReviewRequest(String requestId, Long storeId, int pageNum, int pageSize, boolean isDesc, String sort) {
-        KafkaThemeRequestDto reviewRequest = new KafkaThemeRequestDto(requestId, storeId, pageNum, pageSize, isDesc, sort);
-        kafkaThemeTemplate.send(KafkaTopic.THEME_REQUEST_TOPIC, reviewRequest);
+    private void sendThemeRequest(String requestId, Long storeId, int pageNum, int pageSize, boolean isDesc, String sort) {
+        KafkaThemeRequestDto themeRequest = new KafkaThemeRequestDto(requestId, storeId, pageNum, pageSize, isDesc, sort);
+        kafkaThemeTemplate.send(KafkaTopic.THEME_REQUEST_TOPIC, themeRequest);
     }
 
     /**
@@ -66,15 +68,17 @@ public class ThemeService {
         sendThemeInfoRequest(requestId, storeId, themeId);
 
         try {
-            return future.get(); // 응답을 기다림
+            return future.get(3, TimeUnit.SECONDS); // 응답을 기다림
         } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException("방탈출 카페 response 실패", e);
+            throw new KafkaException(KafkaErrorCode.KAFKA_SERVER_ERROR);
+        }catch (TimeoutException e){
+            throw new KafkaException(KafkaErrorCode.KAFKA_RESPONSE_ERROR);
         }
     }
 
     private void sendThemeInfoRequest(String requestId, Long storeId, Long themeId) {
-        KafkaThemeInfoRequestDto reviewRequest = new KafkaThemeInfoRequestDto(requestId, storeId, themeId);
-        kafkaThemeInfoTemplate.send(KafkaTopic.THEME_INFO_REQUEST_TOPIC, reviewRequest);
+        KafkaThemeInfoRequestDto themeInfoRequest = new KafkaThemeInfoRequestDto(requestId, storeId, themeId);
+        kafkaThemeInfoTemplate.send(KafkaTopic.THEME_INFO_REQUEST_TOPIC, themeInfoRequest);
     }
 
     /**
@@ -90,12 +94,12 @@ public class ThemeService {
         sendThemeTimeRequest(requestId, storeId, themeId, day);
 
         try {
-            return future.get(); // 응답을 기다림
+            return future.get(3, TimeUnit.SECONDS); // 응답을 기다림
         } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException("방탈출 카페 시간 response 실패", e);
+            throw new KafkaException(KafkaErrorCode.KAFKA_SERVER_ERROR);
+        }catch (TimeoutException e){
+            throw new KafkaException(KafkaErrorCode.KAFKA_RESPONSE_ERROR);
         }
-
-
     }
 
     private void sendThemeTimeRequest(String requestId, Long storeId, Long themeId, String day) {

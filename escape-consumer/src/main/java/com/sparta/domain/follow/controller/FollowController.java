@@ -24,7 +24,7 @@ public class FollowController {
     /**
      * 방탈출 카페 팔로우
      * @param storeId 팔로우할 카페 id
-    // * @param userDetails 로그인 유저
+     * @param userDetails 로그인 유저
      * @return status.code, message
      */
     @PostMapping("/stores/{storeId}")

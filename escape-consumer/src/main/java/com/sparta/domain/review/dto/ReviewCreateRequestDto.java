@@ -6,13 +6,6 @@ import lombok.Getter;
 
 @Getter
 public class ReviewCreateRequestDto {
-
-//    @NotNull(message = "방탈출 카페 id가 없습니다.")
-//    private Long StoreId;
-//
-//    @NotNull(message = "방탈출 카페  테마 id가 없습니다.")
-//    private Long themeId;
-
     @NotNull(message = "예약 id가 없습니다.")
     private Long reservationId;
 

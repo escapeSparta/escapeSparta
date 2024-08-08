@@ -2,6 +2,8 @@ package com.sparta.domain.reservation.service;
 
 import com.sparta.domain.reservation.dto.*;
 import com.sparta.domain.user.entity.User;
+import com.sparta.global.exception.customException.KafkaException;
+import com.sparta.global.exception.errorCode.KafkaErrorCode;
 import com.sparta.global.kafka.KafkaTopic;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,9 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.*;
 
 @Service
 @RequiredArgsConstructor
@@ -43,9 +43,11 @@ public class ReservationService {
 
         // Kafka로 요청을 전송하고 응답을 비동기적으로 기다림
         try {
-            return future.get(); // 응답을 기다림
+            return future.get(3, TimeUnit.SECONDS); // 응답을 기다림
         } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException("리뷰 response 실패", e);
+            throw new KafkaException(KafkaErrorCode.KAFKA_SERVER_ERROR);
+        }catch (TimeoutException e){
+            throw new KafkaException(KafkaErrorCode.KAFKA_RESPONSE_ERROR);
         }
     }
 
@@ -87,9 +89,11 @@ public class ReservationService {
 
         // Kafka로 요청을 전송하고 응답을 비동기적으로 기다림
         try {
-            return future.get(); // 응답을 기다림
+            return future.get(3, TimeUnit.SECONDS); // 응답을 기다림
         } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException("리뷰 response 실패", e);
+            throw new KafkaException(KafkaErrorCode.KAFKA_SERVER_ERROR);
+        }catch (TimeoutException e){
+            throw new KafkaException(KafkaErrorCode.KAFKA_RESPONSE_ERROR);
         }
     }
 

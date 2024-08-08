@@ -11,6 +11,7 @@ import com.sparta.domain.theme.entity.ThemeTimeStatus;
 import com.sparta.domain.theme.repository.ThemeTimeRepository;
 import com.sparta.domain.user.entity.User;
 import com.sparta.domain.user.repository.UserRepository;
+import com.sparta.global.exception.customException.GlobalCustomException;
 import com.sparta.global.exception.customException.ReservationException;
 import com.sparta.global.exception.errorCode.ReservationErrorCode;
 import com.sparta.global.kafka.KafkaTopic;
@@ -41,32 +42,36 @@ public class ReservationRequestService {
     private final KafkaEmailProducer kafkaEmailProducer;
 
     @Transactional
-    @KafkaListener(topics = KafkaTopic.RESERVATION_CREATE_REQUEST_TOPIC, groupId = "${GROUP_ID}")
+    @KafkaListener(topics = KafkaTopic.RESERVATION_CREATE_REQUEST_TOPIC, groupId = "${spring.kafka.consumer.group-id}")
     public void handleCreateReservationRequest(KafkaReservationCreateRequestDto requestDto) {
-        User user = userRepository.findByIdOrElseThrow(requestDto.getUserId());
-        ThemeTime themeTime = themeTimeRepository.checkStoreAndThemeActive(requestDto.getRequestDto().getThemeTimeId());
-        reservationRepository.checkReservation(themeTime);
+        try {
+            User user = userRepository.findByIdOrElseThrow(requestDto.getUserId());
+            ThemeTime themeTime = themeTimeRepository.checkStoreAndThemeActive(requestDto.getRequestDto().getThemeTimeId());
+            reservationRepository.checkReservation(themeTime);
 
-        if(themeTime.getThemeTimeStatus() == ThemeTimeStatus.DISABLE) {
-            throw new ReservationException(ReservationErrorCode.RESERVATION_DUPLICATION);
+            if (themeTime.getThemeTimeStatus() == ThemeTimeStatus.DISABLE) {
+                throw new ReservationException(ReservationErrorCode.RESERVATION_DUPLICATION);
+            }
+
+            Reservation reservation = Reservation.builder()
+                    .player(requestDto.getRequestDto().getPlayer())
+                    .price(requestDto.getRequestDto().getPrice())
+                    .paymentStatus(requestDto.getRequestDto().getPaymentStatus())
+                    .reservationStatus(ReservationStatus.ACTIVE)
+                    .user(user)
+                    .theme(themeTime.getTheme())
+                    .themeTime(themeTime)
+                    .build();
+
+            themeTime.updateThemeTimeStatus();
+
+            KafkaReservationCreateResponseDto responseDto = new KafkaReservationCreateResponseDto(requestDto.getRequestId()
+                    , new ReservationCreateResponseDto(reservationRepository.save(reservation)), user.getEmail());
+
+            handleReservationCreateResponse(responseDto);
+        }catch (GlobalCustomException e){
+            log.error(e.getMessage());
         }
-
-        Reservation reservation = Reservation.builder()
-                .player(requestDto.getRequestDto().getPlayer())
-                .price(requestDto.getRequestDto().getPrice())
-                .paymentStatus(requestDto.getRequestDto().getPaymentStatus())
-                .reservationStatus(ReservationStatus.ACTIVE)
-                .user(user)
-                .theme(themeTime.getTheme())
-                .themeTime(themeTime)
-                .build();
-
-        themeTime.updateThemeTimeStatus();
-
-        KafkaReservationCreateResponseDto responseDto =  new KafkaReservationCreateResponseDto(requestDto.getRequestId()
-                , new ReservationCreateResponseDto(reservationRepository.save(reservation)), user.getEmail());
-
-        handleReservationCreateResponse(responseDto);
     }
 
     private void handleReservationCreateResponse(KafkaReservationCreateResponseDto response) {
@@ -78,26 +83,34 @@ public class ReservationRequestService {
     }
 
     @Transactional
-    @KafkaListener(topics = KafkaTopic.RESERVATION_DELETE_REQUEST_TOPIC, groupId = "${GROUP_ID}")
+    @KafkaListener(topics = KafkaTopic.RESERVATION_DELETE_REQUEST_TOPIC, groupId = "${spring.kafka.consumer.group-id}")
     public void handleDeleteReservationRequest(KafkaReservationDeleteRequestDto requestDto) {
-        User user = userRepository.findByIdOrElseThrow(requestDto.getUserId());
-        Reservation reservation = reservationRepository.findByIdAndUserAndActive(requestDto.getReservationId(), user);
+        try {
+            User user = userRepository.findByIdOrElseThrow(requestDto.getUserId());
+            Reservation reservation = reservationRepository.findByIdAndUserAndActive(requestDto.getReservationId(), user);
 
 //        paymentService.refundPayment(requestDto.getReservationId());
-        reservation.updateReservationStatus();
-        ThemeTime themeTime = reservation.getThemeTime();
-        themeTime.updateThemeTimeStatus();
-        kafkaEmailProducer.sendDeleteReservationEmail(KafkaTopic.PAYMENT_DELETE_TOPIC, user.getEmail());
+            reservation.updateReservationStatus();
+            ThemeTime themeTime = reservation.getThemeTime();
+            themeTime.updateThemeTimeStatus();
+            kafkaEmailProducer.sendDeleteReservationEmail(KafkaTopic.PAYMENT_DELETE_TOPIC, user.getEmail());
+        }catch (GlobalCustomException e){
+            log.error(e.getMessage());
+        }
     }
 
     @Transactional
-    @KafkaListener(topics = KafkaTopic.RESERVATION_GET_REQUEST_TOPIC, groupId = "${GROUP_ID}")
+    @KafkaListener(topics = KafkaTopic.RESERVATION_GET_REQUEST_TOPIC, groupId = "${spring.kafka.consumer.group-id}")
     public void handleGetReservationRequest(KafkaReservationGetRequestDto requestDto) {
-        User user = userRepository.findByIdOrElseThrow(requestDto.getUserId());
-        List<Reservation> reservationList = reservationRepository.findByUser(user);
-        List<ReservationResponseDto> responseDtoList = reservationList.stream().map(ReservationResponseDto::new).toList();
-        KafkaReservationGetResponseDto responseDto = new KafkaReservationGetResponseDto(requestDto.getRequestId(), responseDtoList);
-        handleReservationGetResponse(responseDto);
+        try {
+            User user = userRepository.findByIdOrElseThrow(requestDto.getUserId());
+            List<Reservation> reservationList = reservationRepository.findByUser(user);
+            List<ReservationResponseDto> responseDtoList = reservationList.stream().map(ReservationResponseDto::new).toList();
+            KafkaReservationGetResponseDto responseDto = new KafkaReservationGetResponseDto(requestDto.getRequestId(), responseDtoList);
+            handleReservationGetResponse(responseDto);
+        }catch (GlobalCustomException e){
+            log.error(e.getMessage());
+        }
     }
 
     private void handleReservationGetResponse(KafkaReservationGetResponseDto response) {

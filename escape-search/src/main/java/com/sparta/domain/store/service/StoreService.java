@@ -3,6 +3,8 @@ package com.sparta.domain.store.service;
 import com.sparta.domain.store.dto.KafkaStoreRequestDto;
 import com.sparta.domain.store.dto.StoreResponseDto;
 import com.sparta.domain.store.entity.StoreRegion;
+import com.sparta.global.exception.customException.KafkaException;
+import com.sparta.global.exception.errorCode.KafkaErrorCode;
 import com.sparta.global.kafka.KafkaTopic;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,9 +13,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.*;
 
 @Service
 @Slf4j
@@ -39,18 +39,19 @@ public class StoreService {
         String requestId = UUID.randomUUID().toString();
         CompletableFuture<Page<StoreResponseDto>> future = new CompletableFuture<>();
         responseFutures.put(requestId, future);
-        sendReviewRequest(requestId, pageNum, pageSize, isDesc, keyWord, storeRegion, sort);
+        sendStoreRequest(requestId, pageNum, pageSize, isDesc, keyWord, storeRegion, sort);
 
         try {
-            return future.get(); // 응답을 기다림
+            return future.get(3, TimeUnit.SECONDS); // 응답을 기다림
         } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException("방탈출 카페 response 실패", e);
+            throw new KafkaException(KafkaErrorCode.KAFKA_SERVER_ERROR);
+        }catch (TimeoutException e){
+            throw new KafkaException(KafkaErrorCode.KAFKA_RESPONSE_ERROR);
         }
-
     }
 
-    private void sendReviewRequest(String requestId, int pageNum, int pageSize, boolean isDesc, String keyWord, StoreRegion storeRegion, String sort) {
-        KafkaStoreRequestDto reviewRequest = new KafkaStoreRequestDto(requestId, pageNum, pageSize, isDesc, keyWord, storeRegion, sort);
-        kafkaTemplate.send(KafkaTopic.STORE_REQUEST_TOPIC, reviewRequest);
+    private void sendStoreRequest(String requestId, int pageNum, int pageSize, boolean isDesc, String keyWord, StoreRegion storeRegion, String sort) {
+        KafkaStoreRequestDto storeRequest = new KafkaStoreRequestDto(requestId, pageNum, pageSize, isDesc, keyWord, storeRegion, sort);
+        kafkaTemplate.send(KafkaTopic.STORE_REQUEST_TOPIC, storeRequest);
     }
 }
