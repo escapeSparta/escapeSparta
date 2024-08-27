@@ -12,8 +12,6 @@
 
 # 👋 프로젝트 소개
 
-> 🫠 방탈출 예약.. 방탈출 카페마다 예약 방법도 다르고.. 사이트도 다르고… 너무 불편해요!
-
 **Escape Sparta** 는 전국의 방탈출 카페를 모아보고, 원하는 테마의 예약을 진행할 수 있는 중개 사이트입니다
 
 ![title](https://synge-st.notion.site/image/https%3A%2F%2Fprod-files-secure.s3.us-west-2.amazonaws.com%2F893b8654-e780-476c-b862-9eb07e2ddfa7%2F40d3735b-d094-4cf5-9541-2441e61a49d3%2FScreenshot_2024-08-15_at_16.27.22.jpg?table=block&id=09ceeb21-f694-4f0a-9e9f-3ba4b9cb8575&spaceId=893b8654-e780-476c-b862-9eb07e2ddfa7&width=2000&userId=&cache=v2)   
